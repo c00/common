@@ -23,6 +23,7 @@ class Query
 
     private $_select, $_from, $_limit = 0, $_offset = 0, $_object;
 
+    private $_selectFunctions = [];
     private $_max = '';
     private $_where = [], $_whereParams = [];
     private $_whereIn = [];
@@ -82,7 +83,7 @@ class Query
     private function getSelectString(){
         $parts = [];
 
-        if (!empty($this->_max)) $parts[] = $this->_max;
+        $parts = array_merge($parts, $this->_selectFunctions);
         if ($this->_select) $parts[] = $this->_select;
 
         return "SELECT " . implode(', ', $parts);
@@ -227,9 +228,13 @@ class Query
     }
 
     public function max($column){
+        return $this->selectFunction("MAX", $column);
+    }
+
+    public function selectFunction($function, $column){
         if ($this->_type == null) $this->_type = self::TYPE_SELECT;
 
-        $this->_max = 'MAX(' . $this->encapDotnotation($column) . ')';
+        $this->_selectFunctions[] = "$function({$this->encapDotnotation($column)})";
         return $this;
     }
 
