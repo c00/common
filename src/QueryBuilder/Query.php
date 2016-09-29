@@ -267,8 +267,10 @@ class Query
         
         //Make array
         if (is_string($tables)) $tables = [$tables];
+
+        $tables = $this->encapDotnotationArray($tables);
         
-        $this->_from = " FROM `" . implode('`, `', $tables) . "`";
+        $this->_from = " FROM " . implode(', ', $tables) . "";
 
         return $this;
     }
@@ -422,7 +424,7 @@ class Query
 
     /** Turns   table.column   into   `table`.`column`
      * @param $array array takes an array of strings.
-     * @return string
+     * @return array
      */
     private function encapDotnotationArray($array){
         foreach ($array as &$item) {

@@ -21,6 +21,15 @@ class QueryTest extends PHPUnit_Framework_TestCase
 
     }
 
+    public function testSelectEncapped(){
+        $expected = "SELECT * FROM `table`.`user`";
+
+        $query = new Query();
+        $query->select()->from('table.user');
+
+        $this->assertSame($expected, $query->getSql());
+    }
+
     public function testOrderBy(){
         $expected = "SELECT * FROM `user` ORDER BY `user`.`name` ASC";
 
