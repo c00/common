@@ -330,6 +330,8 @@ class Query
     private function getWhereString(){
         if (count($this->_where) == 0 && count($this->_whereIn) == 0) return '';
 
+        //Should also take into account null.
+
         $this->_whereParams = [];
         $strings = [];
         foreach ($this->_where as $condition) {
