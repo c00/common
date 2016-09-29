@@ -533,4 +533,16 @@ class QueryTest extends PHPUnit_Framework_TestCase
 
         $this->assertSame($expected, $query->getSql());
     }
+
+    public function testSelectFunctionsWithAlias(){
+        $query = new Query();
+        $query->selectFunction("avg", "cost", "your face")
+            ->select("user")
+            ->from("product");
+
+        //Note, this is hardly valid without a GROUP BY...
+        $expected = "SELECT avg(`cost`) as `your face`, `user` FROM `product`";
+
+        $this->assertSame($expected, $query->getSql());
+    }
 }

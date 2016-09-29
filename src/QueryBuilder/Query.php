@@ -231,10 +231,12 @@ class Query
         return $this->selectFunction("MAX", $column);
     }
 
-    public function selectFunction($function, $column){
+    public function selectFunction($function, $column, $alias = null){
         if ($this->_type == null) $this->_type = self::TYPE_SELECT;
 
-        $this->_selectFunctions[] = "$function({$this->encapDotnotation($column)})";
+        $aliasString = ($alias) ? " as ". $this->encapDotnotation($alias) : '';
+
+        $this->_selectFunctions[] = "$function({$this->encapDotnotation($column)})$aliasString";
         return $this;
     }
 
