@@ -333,6 +333,8 @@ class Query
         $this->_whereParams = [];
         $strings = [];
         foreach ($this->_where as $condition) {
+            $condition['condition1'] = $this->encapDotnotation($condition['condition1']);
+
             //allow IS NULL and IS NOT NULL
             if ($condition['condition2'] == null){
                 $strings[] = "{$condition['condition1']} {$condition['operator']} NULL";
@@ -341,8 +343,6 @@ class Query
 
             $conditionId = uniqid();
             $this->_whereParams[$conditionId] = $condition['condition2'];
-
-            $condition['condition1'] = $this->encapDotnotation($condition['condition1']);
 
             $strings[] = "{$condition['condition1']} {$condition['operator']} :$conditionId";
         }
