@@ -9,18 +9,20 @@
 namespace test;
 
 
+use c00\common\AbstractDatabaseObject;
 use c00\common\CovleDate;
+use c00\sample\User;
 
 class crapTest extends \PHPUnit_Framework_TestCase
 {
 
     public function testTruth(){
         $i1 = 1;
-        $i0 = 0;
-
         $s1 = "1";
-        $s0 = "0";
         $b1 = true;
+
+        $i0 = 0;
+        $s0 = "0";
         $b0 = false;
 
         $this->assertTrue((bool)$i1);
@@ -32,8 +34,4 @@ class crapTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse((bool)$b0);
     }
 
-    public function testSomething(){
-        $d = CovleDate::now();
-        $this->assertNotNull($d);
-    }
 }
