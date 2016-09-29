@@ -3,6 +3,7 @@
     "description": "A mini framework for Database access, Dependency injection and Date manipulation.",
     "type": "library",
     "license": "MIT",
+    "minimum-stability": "stable",
     "authors": [
         {
             "name": "Coo",
