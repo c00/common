@@ -1,0 +1,21 @@
+{
+    "name": "c00/common",
+    "description": "A mini framework for Database access, Dependency injection and Date manipulation.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Coo",
+            "email": "coo@covle.com"
+        }
+    ],
+    "require-dev": {
+        "phpunit/phpunit": "5.4.*"
+    },
+    "autoload": {
+        "psr-4": { "c00\\": "/common/src/" }
+    },
+    "require": {
+
+    }
+}
