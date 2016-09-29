@@ -330,11 +330,15 @@ class Query
     private function getWhereString(){
         if (count($this->_where) == 0 && count($this->_whereIn) == 0) return '';
 
-        //Should also take into account null.
-
         $this->_whereParams = [];
         $strings = [];
         foreach ($this->_where as $condition) {
+            //allow IS NULL and IS NOT NULL
+            if ($condition['condition2'] == null){
+                $strings[] = "{$condition['condition1']} {$condition['operator']} NULL";
+                continue;
+            }
+
             $conditionId = uniqid();
             $this->_whereParams[$conditionId] = $condition['condition2'];
 

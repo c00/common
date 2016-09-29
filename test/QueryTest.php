@@ -272,6 +272,27 @@ class QueryTest extends PHPUnit_Framework_TestCase
         $this->assertSame($expected, $sql);
     }
 
+    public function testSelectWhereNull(){
+        $params = [];
+        $query = new Query();
+        $sql = $query->select(['id', 'emailAddress' => 'user.email'])
+            ->from('user')
+            ->where('id', '=', 1)
+            ->where('email', '=', 'coo@covle.com')
+            ->where('role', '>', '3')
+            ->where('species', 'IS', null)
+            ->getSql($params);
+
+        $keys = array_keys($params);
+        $idKey = $keys[0];
+        $emailKey = $keys[1];
+        $roleKey = $keys[2];
+
+        $expected = "SELECT `id`, `user`.`email` AS `emailAddress` FROM `user` WHERE `id` = :$idKey AND `email` = :$emailKey AND `role` > :$roleKey AND `species` IS NULL";
+
+        $this->assertSame($expected, $sql);
+    }
+
     public function testSelectWhereLimit(){
         $params = [];
         $query = new Query();
