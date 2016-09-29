@@ -334,7 +334,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
         }
 
         //Check interface implementation
-        $t = new \c00\dmc\Team();
+        $t = new \c00\sample\Team();
         $this->assertTrue($qb->checkDataType($t, \c00\common\IDatabaseObject::class));
 
     }
@@ -342,7 +342,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     public function testUpdate(){
         $params = [];
         $q = new Query();
-        $t = new \c00\dmc\Team();
+        $t = new \c00\sample\Team();
         $t->active = 1;
         $t->code = "teamcode";
         $t->name = "teamname";
@@ -369,7 +369,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     public function testInsert(){
         $params = [];
         $q = new Query();
-        $t = new \c00\dmc\Team();
+        $t = new \c00\sample\Team();
         $t->active = 1;
         $t->code = "teamcode";
         $t->name = "teamname";
