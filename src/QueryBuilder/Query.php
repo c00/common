@@ -292,6 +292,16 @@ class Query
         return $this;
     }
 
+    public function outerJoin($table, $column1, $operator, $column2, $direction = "LEFT"){
+
+        $column1 = $this->encapDotnotation($column1);
+        $column2 = $this->encapDotnotation($column2);
+
+        $this->_join .= " $direction OUTER JOIN `$table` ON $column1 $operator $column2";
+
+        return $this;
+    }
+
     public function where($condition1, $operator, $condition2){
         $condition = [
             'condition1' => $condition1,

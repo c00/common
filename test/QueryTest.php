@@ -495,6 +495,39 @@ class QueryTest extends PHPUnit_Framework_TestCase
         $this->assertSame($expected, $sql);
     }
 
+    public function testSelectOuterJoin(){
+        $query = new Query();
+        $query->select()
+            ->from('user')
+            ->outerJoin('session', 'session.userId', '=', 'user.id')
+            ->join('role', 'user.roleId', '=', 'role.id')
+            ->where('id', '=', 1);
+
+        $params = [];
+        $sql = $query->getSql($params);
+        $key = array_keys($params)[0];
+
+        $expected = "SELECT * FROM `user` LEFT OUTER JOIN `session` ON `session`.`userId` = `user`.`id` JOIN `role` ON `user`.`roleId` = `role`.`id` WHERE `id` = :{$key}";
+
+        $this->assertSame($expected, $sql);
+    }
+
+    public function testSelectOuterJoin2(){
+        $query = new Query();
+        $query->select()
+            ->from('user')
+            ->outerJoin('session', 'session.userId', '=', 'user.id', "RIGHT")
+            ->where('id', '=', 1);
+
+        $params = [];
+        $sql = $query->getSql($params);
+        $key = array_keys($params)[0];
+
+        $expected = "SELECT * FROM `user` RIGHT OUTER JOIN `session` ON `session`.`userId` = `user`.`id` WHERE `id` = :{$key}";
+
+        $this->assertSame($expected, $sql);
+    }
+
     public function testWhereEncapped(){
         $query = new Query();
         $query->select()

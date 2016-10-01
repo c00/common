@@ -30,7 +30,5 @@ class DatabaseObjectTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($u->email, $u2->email);
         $this->assertTrue($u instanceof User);
         $this->assertTrue($u2 instanceof User);
-
-
     }
 }
