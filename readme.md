@@ -14,3 +14,7 @@ but it does the basic CRUD stuff, including joins.
 ##Documentation
 Is not really available. But feel free to send me messages and I might 
 add some prose along the way.
+
+#Todo:
+- Separate CovleDate and Settings to their own projects. They should not 
+  be part of this project.

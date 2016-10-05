@@ -6,8 +6,12 @@
  * Time: 10:23
  */
 
-namespace c00\common;
+namespace c00\dependencies;
 
+/**
+ * Class AbstractDependencyContainer
+ * @package c00\dependencies
+ */
 abstract class AbstractDependencyContainer
 {
     protected $dependencies = [];
@@ -28,16 +32,20 @@ abstract class AbstractDependencyContainer
 
         //Add the dependencycontainer to the dependency if applicable
         $traits = class_uses($dependency);
-        if (!in_array(TDependency::class, $traits)){
+        if (!in_array(TDependency::class, $traits) && !$dependency instanceof IDependency){
             return;
         }
         /** @var TDependency $dependency */
         $dependency->setDc($this);
     }
 
+    /** Get dependency.
+     * @param $name string The classname of the dependency
+     * @return mixed|null Will return the Depedency, or null  if it's not found.
+     */
     protected function getDependency($name){
         if (!isset($this->dependencies[$name])){
-            return false;
+            return null;
         }
 
         return $this->dependencies[$name];

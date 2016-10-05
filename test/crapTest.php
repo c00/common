@@ -9,10 +9,6 @@
 namespace test;
 
 
-use c00\common\AbstractDatabaseObject;
-use c00\common\CovleDate;
-use c00\sample\User;
-
 class crapTest extends \PHPUnit_Framework_TestCase
 {
 
@@ -32,6 +28,27 @@ class crapTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse((bool)$i0);
         $this->assertFalse((bool)$s0);
         $this->assertFalse((bool)$b0);
+    }
+
+    public function testTypes(){
+        //assertSame(2, "2") will fail
+        //assertEquals(2, "2") will pass
+
+        //assertSame is strict. 1 != "1"
+        $this->assertSame("lol" - 2, -2); // ???
+        $this->assertSame("Anything" - 1, -1); // ???
+        $this->assertSame("0" + 4, 4);
+        $this->assertSame("0" . 4, "04");
+        $this->assertSame("0" - 4, -4);
+        $this->assertSame("0" * 4, 0);
+        $this->assertSame("0" / 4, 0);
+        //$this->assertSame("0" / 0, 0); //Division by Zero exception
+        $this->assertSame("foo" - "bar", 0);
+        $this->assertNotSame("foo" - "bar", 2);
+        $this->assertNotSame("foo" - "bar", false);
+        $this->assertSame("foo" * "bar", 0);
+        //$this->assertSame("foo" / "bar", 0); //Division by Zero exception
+
     }
 
 }

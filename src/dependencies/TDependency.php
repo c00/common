@@ -6,14 +6,12 @@
  * Time: 10:44
  */
 
-namespace c00\common;
-
-use c00\dmc\DependencyContainer;
+namespace c00\dependencies;
 
 trait TDependency
 {
     /**
-     * @var DependencyContainer
+     * @var AbstractDependencyContainer
      */
     protected $dc;
 

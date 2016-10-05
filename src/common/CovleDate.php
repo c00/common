@@ -68,7 +68,7 @@ class CovleDate{
         return $this->dateTime->getTimestamp();
     }
 
-    function toMiliSeconds(){
+    function toMiliseconds(){
         return $this->dateTime->getTimestamp() * 1000;
     }
 
@@ -87,6 +87,10 @@ class CovleDate{
 
     function isEarlierThan(CovleDate $date){
         return ($this->toSeconds() < $date->toSeconds());
+    }
+
+    function equals(CovleDate $date){
+        return ($date->toSeconds() == $this->toSeconds());
     }
 
     function isPast(){
@@ -112,7 +116,7 @@ class CovleDate{
     }
 
     function toDateString(){
-        return $this->dateTime->format('Y-m-d');
+        return $this->toW3cString();
     }
 
     function dayOfMonth(){
@@ -123,12 +127,21 @@ class CovleDate{
         return $this->dateTime->format('Y-m-d');
     }
 
-    static function fromJavaScript($milliSeconds){
+    static function fromMilliseconds($milliSeconds){
         if (!is_numeric($milliSeconds)) $milliSeconds = 0;
 
         $seconds = $milliSeconds / 1000;
         $dt = new DateTime(date('Y-m-d H:i:s', $seconds));
         return new CovleDate($dt);
+    }
+
+    /**
+     * @param $milliSeconds
+     * @return CovleDate
+     * @deprecated use FromMilliseconds() instead
+     */
+    static function fromJavaScript($milliSeconds){
+        return self::fromMilliseconds($milliSeconds);
     }
 
     static function fromMailgun($timestamp){
