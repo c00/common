@@ -9,6 +9,8 @@
 namespace test;
 
 
+use c00\common\CovleDate;
+
 class crapTest extends \PHPUnit_Framework_TestCase
 {
 
@@ -49,6 +51,11 @@ class crapTest extends \PHPUnit_Framework_TestCase
         $this->assertSame("foo" * "bar", 0);
         //$this->assertSame("foo" / "bar", 0); //Division by Zero exception
 
+    }
+
+    public function testNothing(){
+        $d = CovleDate::now()->addMonths(-7)->toSeconds();
+        $d++;
     }
 
 }

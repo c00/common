@@ -578,4 +578,18 @@ class QueryTest extends PHPUnit_Framework_TestCase
 
         $this->assertSame($expected, $query->getSql());
     }
+
+    public function testNullIsNot0(){
+        $q = new Query();
+        $q->select()
+            ->from('user')
+            ->where('status', '=', 0);
+
+        $params = [];
+        $sql = $q->getSql($params);
+        $key = array_keys($params)[0];
+
+        $expected = "SELECT * FROM `user` WHERE `status` = :{$key}";
+        $this->assertEquals($expected, $sql);
+    }
 }

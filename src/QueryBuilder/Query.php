@@ -355,7 +355,7 @@ class Query
             $condition['condition1'] = $this->encapDotnotation($condition['condition1']);
 
             //allow IS NULL and IS NOT NULL
-            if ($condition['condition2'] == null){
+            if ($condition['condition2'] === null){
                 $strings[] = "{$condition['condition1']} {$condition['operator']} NULL";
                 continue;
             }
