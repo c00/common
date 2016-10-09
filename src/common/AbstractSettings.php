@@ -11,22 +11,23 @@ namespace c00\common;
 abstract class AbstractSettings
 {
     protected $key;
+    protected $path;
 
-    public function __construct($key){
+    public function __construct($key, $path){
         $this->key = $key;
+        $this->path = $path;
     }
 
-    private function getDefaultPath(){
-     return $path = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR;
+    protected function getFilePath(){
+        return $this->path . $this->key . '.json';
     }
 
-    public function save($path = null){
-        if ($path === null) $path = $this->getDefaultPath();
+    public function save(){
 
-        $dest = $path . $this->key . '.json';
+        $dest = $this->getFilePath();
 
-        if (!file_exists($path)) {
-            if (!mkdir($path, 0770, true)){
+        if (!file_exists($this->path)) {
+            if (!mkdir($this->path, 0770, true)){
                 throw new \Exception("Can't create folder to save settings");
             }
         }
@@ -38,16 +39,13 @@ abstract class AbstractSettings
         return true;
     }
 
-    public function load($path = null){
-        if ($path === null) $path = $this->getDefaultPath();
+    public function load(){
         $this->loadDefaults();
 
-
-        $file = $path . $this->key . '.json';
+        $file = $this->getFilePath();
         if (!file_exists($file)) return false;
+
         $json =  file_get_contents($file);
-
-
 
         if (!is_string($json)) return false;
 
