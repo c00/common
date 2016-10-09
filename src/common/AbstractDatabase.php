@@ -2,8 +2,8 @@
 
 namespace c00\common;
 
-use c00\QueryBuilder\Query;
 use \PDO;
+use c00\QueryBuilder\IQry;
 
 /**
  * Class AbstractDatabase
@@ -39,7 +39,7 @@ abstract class AbstractDatabase
         return true;
     }
 
-    public function updateRow(Query $q)
+    public function updateRow(IQry $q)
     {
         //protect against inadvertently updating everything
         if ($q->whereCount() == 0) {
@@ -56,12 +56,12 @@ abstract class AbstractDatabase
     }
 
     /**
-     * @param Query $q
+     * @param IQry $q
      * @param bool $noId Set this to true if the table does not use an ID column.
      * @return bool|string True or false to indicate success. Or the ID of the new row when $noId = false.
      * @throws \Exception
      */
-    public function insertRow(Query $q, $noId = false)
+    public function insertRow(IQry $q, $noId = false)
     {
         $statement = $this->db->prepare($q->getSql());
         $params = $q->getInsertParams();
@@ -74,7 +74,7 @@ abstract class AbstractDatabase
         return ($noId) ? true : $this->db->lastInsertId();
     }
 
-    public function getRow(Query $q, $toShowable = false)
+    public function getRow(IQry $q, $toShowable = false)
     {
         $q->limit(1);
         $result = $this->getRows($q, $toShowable);
@@ -84,7 +84,7 @@ abstract class AbstractDatabase
         return $result[0];
     }
     
-    public function getRows(Query $q, $toShowable = false)
+    public function getRows(IQry $q, $toShowable = false)
     {
         $statement = $this->db->prepare($q->getSql());
         $where = $q->getWhereParams();
@@ -119,7 +119,7 @@ abstract class AbstractDatabase
         return $result;
     }
 
-    public function deleteRows(Query $q)
+    public function deleteRows(IQry $q)
     {
         $statement = $this->db->prepare($q->getSql());
         $where = $q->getWhereParams();
@@ -132,10 +132,10 @@ abstract class AbstractDatabase
     }
 
     /**
-     * @param $q Query
+     * @param $q IQry
      * @return bool
      */
-    public function rowExists(Query $q)
+    public function rowExists(IQry $q)
     {
         $q->limit(1);
         $result = $this->getRows($q);

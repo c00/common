@@ -556,9 +556,9 @@ class QueryTest extends PHPUnit_Framework_TestCase
 
     public function testSelectFunctions2(){
         $query = new Query();
-        $query->selectFunction("avg", "cost")
+        $query->select("user")
+            ->selectFunction("avg", "cost")
             ->selectFunction("max", "age")
-            ->select("user")
             ->from("product");
 
         //Note, this is hardly valid without a GROUP BY...
@@ -569,8 +569,8 @@ class QueryTest extends PHPUnit_Framework_TestCase
 
     public function testSelectFunctionsWithAlias(){
         $query = new Query();
-        $query->selectFunction("avg", "cost", "your face")
-            ->select("user")
+        $query->select("user")
+            ->selectFunction("avg", "cost", "your face")
             ->from("product");
 
         //Note, this is hardly valid without a GROUP BY...
