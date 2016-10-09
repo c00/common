@@ -68,6 +68,10 @@ class Query implements IQry
         return $q;
     }
 
+    public function getType(){
+        return $this->q->getType();
+    }
+
     public function orderBy($column, $ascending = true)
     {
         $this->q->orderBy($column, $ascending);

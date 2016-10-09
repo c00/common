@@ -2,6 +2,8 @@
 
 namespace c00\common;
 
+use c00\QueryBuilder\Qry;
+use c00\QueryBuilder\QueryBuilderException;
 use \PDO;
 use c00\QueryBuilder\IQry;
 
@@ -41,9 +43,13 @@ abstract class AbstractDatabase
 
     public function updateRow(IQry $q)
     {
+        if ($q->getType() != Qry::TYPE_UPDATE){
+            throw new QueryBuilderException("Wrong Query type!");
+        }
+
         //protect against inadvertently updating everything
         if ($q->whereCount() == 0) {
-            throw new \Exception("No WHERE clause!");
+            throw new QueryBuilderException("No WHERE clause!");
         }
 
         $sql = $q->getSql();
@@ -63,6 +69,10 @@ abstract class AbstractDatabase
      */
     public function insertRow(IQry $q, $noId = false)
     {
+        if ($q->getType() != Qry::TYPE_INSERT){
+            throw new QueryBuilderException("Wrong Query type!");
+        }
+
         $statement = $this->db->prepare($q->getSql());
         $params = $q->getInsertParams();
         $this->bindValues($statement, $params);
@@ -76,6 +86,10 @@ abstract class AbstractDatabase
 
     public function getRow(IQry $q, $toShowable = false)
     {
+        if ($q->getType() != Qry::TYPE_SELECT){
+            throw new QueryBuilderException("Wrong Query type!");
+        }
+
         $q->limit(1);
         $result = $this->getRows($q, $toShowable);
         if (!isset($result[0])) {
@@ -86,6 +100,10 @@ abstract class AbstractDatabase
     
     public function getRows(IQry $q, $toShowable = false)
     {
+        if ($q->getType() != Qry::TYPE_SELECT){
+            throw new QueryBuilderException("Wrong Query type!");
+        }
+
         $statement = $this->db->prepare($q->getSql());
         $where = $q->getWhereParams();
 
@@ -121,6 +139,10 @@ abstract class AbstractDatabase
 
     public function deleteRows(IQry $q)
     {
+        if ($q->getType() != Qry::TYPE_DELETE){
+            throw new QueryBuilderException("Wrong Query type!");
+        }
+
         $statement = $this->db->prepare($q->getSql());
         $where = $q->getWhereParams();
 

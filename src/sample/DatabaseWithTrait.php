@@ -24,4 +24,8 @@ class DatabaseWithTrait extends AbstractDatabase
         return $this->dc;
     }
 
+    public function connect($host, $user, $pass, $dbName){
+        parent::connect($host, $user, $pass, $dbName);
+    }
+
 }

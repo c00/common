@@ -180,7 +180,9 @@ class Qry implements IQry
         return $this->_returnClass;
     }
 
-
+    public function getType(){
+        return $this->_type;
+    }
 
     public function max($column, $alias = null){
         return $this->selectFunction("MAX", $column, $alias);

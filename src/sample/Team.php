@@ -8,10 +8,10 @@
 
 namespace c00\sample;
 
+use c00\common\AbstractDatabaseObject;
 use c00\common\Helper as H;
-use c00\common\IDatabaseObject;
 
-class Team implements IDatabaseObject
+class Team extends AbstractDatabaseObject
 {
     public $id;
     public $name;
@@ -30,29 +30,12 @@ class Team implements IDatabaseObject
      */
     public static function fromArray($array)
     {
+        /** @var Team $t */
         $t = H::objectFromArray($array, self::class);
 
+        $t->id = (int) $array['id'];
+        $t->active = (bool) $array['active'];
+
         return $t;
-    }
-
-    /** Converts the object into an array
-     * @return array
-     */
-    public function toArray()
-    {
-        $array = H::objectToArray($this);
-
-        $array['code'] = strtolower($this->code);
-        unset($array['color']);
-
-        return $array;
-    }
-
-    public function toShowable(){
-        $a = H::objectToArray($this);
-        $a['active'] = (bool) $this->active;
-        $a['id'] = (int) $this->id;
-
-        return $a;
     }
 }

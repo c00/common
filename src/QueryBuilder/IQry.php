@@ -26,5 +26,6 @@ interface IQry {
     public function whereIn($column, array $values);
     public function whereCount();
     public function checkDataType($object, $allowedTypes);
+    public function getType();
 
 }
