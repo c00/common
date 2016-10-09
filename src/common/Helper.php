@@ -18,108 +18,6 @@ use c00\dmc\Team;
  */
 class Helper
 {
-    public static function deleteUnusedChallengeImages(DependencyContainer $dc){
-        $challenges = $dc->getDb()->getChallenges(false, true);
-        $folder = $dc->getSettings()->challengePictureFolder;
-
-        $filesToKeep = [];
-        foreach ($challenges as $challenge) {
-            /** @var Challenge $challenge */
-
-            //Get Challenge files
-            if ($challenge->image){
-                $oldImages = self::getResizedImageFilenames($challenge->image);
-                $oldImages['image'] = $challenge->image;
-
-                $filesToKeep = array_merge($filesToKeep, array_values($oldImages));
-            }
-        }
-
-        //get Answer files
-        $answers = $dc->getTm()->getAllAnswers();
-        foreach ($answers as $answer) {
-            /** @var $answer Answer */
-            if ($answer->image) $filesToKeep[] = $answer->image;
-        }
-
-        $filesAvailable = array_diff(scandir($folder), ['..', '.', 'index.html']);
-
-        $filesToRemove = array_diff($filesAvailable, $filesToKeep);
-        foreach ($filesToRemove as $file) {
-            if (file_exists($folder.$file)) unlink($folder.$file);
-        }
-    }
-
-    public static function deleteUnusedProfileImages(DependencyContainer $dc){
-        $teams = $dc->getTm()->getTeams();
-
-        $folder = $dc->getSettings()->profileFolder;
-
-        $filesToKeep = [];
-        foreach ($teams as $team) {
-            /** @var Team $team */
-            if ($team->image) $filesToKeep[] = $team->image;
-        }
-
-        $filesAvailable = array_diff(scandir($folder), ['..', '.', 'index.html']);
-
-        $filesToRemove = array_diff($filesAvailable, $filesToKeep);
-        foreach ($filesToRemove as $file) {
-            if (file_exists($folder.$file)) unlink($folder.$file);
-        }
-    }
-
-    /** Create resized square images in desired sizes
-     *
-     * @param string $src The full path of the source image.
-     * @param string $dstPath Destination path with trailing slash
-     * @param int|array $sizes The desired size or sizes. If array, will create multiple images.
-     * @return bool
-     */
-    public static function createSmallerSquareImages($src, $dstPath, $sizes = [500, 800]){
-        if (!file_exists($src)) return false;
-
-        if (!is_array($sizes)) $sizes = [$sizes];
-
-        $im = new ImageManipulator();
-        $filename = pathinfo($src, PATHINFO_FILENAME);
-        $extension = "." . pathinfo($src, PATHINFO_EXTENSION);
-
-        foreach ($sizes as $size) {
-            $resizedFilename = $dstPath. $filename . "_" . $size . $extension;
-            if (file_exists($resizedFilename)) continue;
-
-            $im->setImageFile($src)
-                ->cropToSquare()
-                ->resample($size, $size)
-                ->save($dstPath. $filename . "_" . $size . $extension);
-
-        }
-
-        return true;
-    }
-
-    /** returns a list of resized image filenames
-     *
-     * @param $basename string The source filename (no path)
-     * @param array|int $sizes The size or sizes to get the filenames for
-     * @return array|string The array of filenames if multiple. String of Filename otherwise
-     */
-    public static function getResizedImageFilenames($basename, $sizes = [500, 800]){
-        if (!is_array($sizes)) $sizes = [$sizes];
-        $filename = pathinfo($basename, PATHINFO_FILENAME);
-        $extension = "." . pathinfo($basename, PATHINFO_EXTENSION);
-
-        $array = [];
-        foreach ($sizes as $size) {
-            $array["image_$size"] = $filename . "_" . $size . $extension;
-        }
-
-        if (count($array) == 1) return $array[0];
-
-        return $array;
-    }
-
     public static function getArrayValue($array, $value, $default = ""){
         if (!is_array($array)) return $default;
 
@@ -229,26 +127,6 @@ class Helper
         }
 
         return $result;
-    }
-
-    /**
-     * Will copy the value of MongoId ['_id']->{'$id'} to ['id'].
-     *
-     * @param array $object by reference
-     * @param bool $unsetMongoId Indicates to remove the '_id'
-     * @return bool|array The resulting array or false on failure
-     */
-    public static function fixMongoIdToString(array &$object, $unsetMongoId = false){
-        if (!$object) return false;
-
-        if (isset($object['_id'])){
-            $object['id'] = $object['_id']->{'$id'};
-            if ($unsetMongoId) unset ($object['_id']);
-
-            return $object;
-        }
-
-        return false;
     }
 
     /** Transform an array of objects into an associative array of objects.
