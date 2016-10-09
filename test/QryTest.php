@@ -6,7 +6,7 @@
  * Time: 11:03
  */
 
-use c00\QueryBuilder\Query;
+use c00\QueryBuilder\Qry;
 use c00\QueryBuilder\QueryBuilderException;
 
 class QueryTest extends PHPUnit_Framework_TestCase
@@ -14,8 +14,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     public function testSelect(){
         $expected = "SELECT * FROM `user`";
 
-        $query = new Query();
-        $query->select()->from('user');
+        $query = Qry::select()->from('user');
 
         $this->assertSame($expected, $query->getSql());
 
@@ -24,8 +23,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     public function testSelectEncapped(){
         $expected = "SELECT * FROM `table`.`user`";
 
-        $query = new Query();
-        $query->select()->from('table.user');
+        $query = Qry::select()->from('table.user');
 
         $this->assertSame($expected, $query->getSql());
     }
@@ -33,8 +31,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     public function testOrderBy(){
         $expected = "SELECT * FROM `user` ORDER BY `user`.`name` ASC";
 
-        $query = new Query();
-        $query->select()->from('user')
+        $query = Qry::select()->from('user')
             ->orderBy('user.name');
 
         $this->assertSame($expected, $query->getSql());
@@ -43,8 +40,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
 
     public function testOrderBy2(){
 
-        $query = new Query();
-        $query->select()->from('user')
+        $query = Qry::select()->from('user')
             ->where('role', '=', 'admin')
             ->orderBy('user.name', false)
             ->limit(15);
@@ -59,20 +55,10 @@ class QueryTest extends PHPUnit_Framework_TestCase
 
     }
 
-    public function testNewSelect(){
-        $expected = "SELECT * FROM `user`";
-
-        $query = Query::newSelect('user');
-
-        $this->assertSame($expected, $query->getSql());
-
-    }
-
     public function testSelectMax(){
         $expected = "SELECT `email`, MAX(`id`) FROM `user`";
 
-        $query = new Query();
-        $query->select('email')
+        $query = Qry::select('email')
             ->max('id')
             ->from('user');
 
@@ -82,8 +68,8 @@ class QueryTest extends PHPUnit_Framework_TestCase
     public function testSelectMax2(){
         $expected = "SELECT MAX(`id`) FROM `user`";
 
-        $query = new Query();
-        $query->max('id')
+        $query = Qry::select()
+            ->max('id')
             ->from('user');
 
         $this->assertSame($expected, $query->getSql());
@@ -92,42 +78,15 @@ class QueryTest extends PHPUnit_Framework_TestCase
     public function testSelectMax3(){
         $expected = "SELECT `challengeId`, `code`, `image`, `created`, `correct`, MAX(`created`) FROM `answer`";
 
-        $query = new Query();
-        $query->select(['challengeId', 'code', 'image', 'created', 'correct' ])
+        $query = Qry::select(['challengeId', 'code', 'image', 'created', 'correct' ])
             ->max('created')
             ->from('answer');
 
         $this->assertSame($expected, $query->getSql());
     }
 
-    public function testNewSelectWhere(){
-        $query = Query::newSelect('user', ['id' => 1]);
-
-        $params = [];
-        $sql = $query->getSql($params);
-        $key = array_keys($params)[0];
-
-        $expected = "SELECT * FROM `user` WHERE `id` = :{$key}";
-
-        $this->assertSame($expected, $sql);
-    }
-
-    public function testNewSelectWhere2(){
-        $query = Query::newSelect('user', ['id' => 1, 'email' => 'blaat@aap.com']);
-
-        $params = [];
-        $sql = $query->getSql($params);
-        $id = array_keys($params)[0];
-        $email = array_keys($params)[1];
-
-        $expected = "SELECT * FROM `user` WHERE `id` = :{$id} AND `email` = :{$email}";
-
-        $this->assertSame($expected, $sql);
-    }
-
     public function testSelectWhere(){
-        $query = new Query();
-        $query->select()->from('user')->where('id', '=', 1);
+        $query = Qry::select()->from('user')->where('id', '=', 1);
 
         $params = [];
         $sql = $query->getSql($params);
@@ -139,8 +98,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     }
 
     public function testSelectWhereIn(){
-        $query = new Query();
-        $query->select()->from('user')->whereIn('id', [1, 6, 8]);
+        $query = Qry::select()->from('user')->whereIn('id', [1, 6, 8]);
 
         $params = [];
         $sql = $query->getSql($params);
@@ -152,8 +110,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     }
 
     public function testSelectWhereIn2(){
-        $query = new Query();
-        $query->select()
+        $query = Qry::select()
             ->from('user')
             ->where('email', '=', 'coo@covle.com')
             ->whereIn('id', [1, 6, 8]);
@@ -168,8 +125,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     }
 
     public function testSelectWhereIn3(){
-        $query = new Query();
-        $query->select()->from('user')->whereIn('id', []);
+        $query = Qry::select()->from('user')->whereIn('id', []);
 
         $params = [];
         $sql = $query->getSql($params);
@@ -180,8 +136,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     }
 
     public function testSelectWhereIn4(){
-        $query = new Query();
-        $query->select()
+        $query = Qry::select()
             ->from('user')
             ->where('email', '=', 'coo@covle.com')
             ->whereIn('id', []);
@@ -196,8 +151,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     }
 
     public function testSelectDistinctWhere(){
-        $query = new Query();
-        $query->select([], true)->from('user')->where('id', '=', 1);
+        $query = Qry::select([], true)->from('user')->where('id', '=', 1);
 
         $params = [];
         $sql = $query->getSql($params);
@@ -209,8 +163,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     }
 
     public function testSelectDistinctWhere2(){
-        $query = new Query();
-        $query->select(['id', 'name'], true)->from('user')->where('id', '=', 1);
+        $query = Qry::select(['id', 'name'], true)->from('user')->where('id', '=', 1);
 
         $params = [];
         $sql = $query->getSql($params);
@@ -223,8 +176,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
 
     public function testSelectWhere2(){
         $params = [];
-        $query = new Query();
-        $sql = $query->select()
+        $sql  = Qry::select()
             ->from('user')
             ->where('id', '=', 1)
             ->where('email', '=', 'coo@covle.com')
@@ -243,8 +195,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
 
     public function testSelectWhere3(){
         $params = [];
-        $query = new Query();
-        $sql = $query->select(['id', 'user.email', 'user.*'])
+        $sql  = Qry::select(['id', 'user.email', 'user.*'])
             ->from('user')
             ->where('id', '=', 1)
             ->where('email', '=', 'coo@covle.com')
@@ -263,8 +214,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
 
     public function testSelectWhere4(){
         $params = [];
-        $query = new Query();
-        $sql = $query->select(['id', 'emailAddress' => 'user.email'])
+        $sql  = Qry::select(['id', 'emailAddress' => 'user.email'])
             ->from('user')
             ->where('id', '=', 1)
             ->where('email', '=', 'coo@covle.com')
@@ -283,8 +233,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
 
     public function testSelectWhereNull(){
         $params = [];
-        $query = new Query();
-        $sql = $query->select(['id', 'emailAddress' => 'user.email'])
+        $sql  = Qry::select(['id', 'emailAddress' => 'user.email'])
             ->from('user')
             ->where('id', '=', 1)
             ->where('email', '=', 'coo@covle.com')
@@ -304,8 +253,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
 
     public function testSelectWhereLimit(){
         $params = [];
-        $query = new Query();
-        $sql = $query->select()
+        $sql  = Qry::select()
             ->from('user')
             ->where('id', '=', 1)
             ->where('email', '=', 'coo@covle.com')
@@ -325,8 +273,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
 
     public function testSelectWhereLimitOffset(){
         $params = [];
-        $query = new Query();
-        $sql = $query->select()
+        $sql  = Qry::select()
             ->from('user')
             ->where('id', '=', 1)
             ->where('email', '=', 'coo@covle.com')
@@ -346,7 +293,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
 
     public function testCheckDataType(){
         $s = "bla";
-        $qb = new Query();
+        $qb = new Qry();
         //Check simple types
         $this->assertTrue($qb->checkDataType($s, ['object', 'string']));
         $this->assertTrue($qb->checkDataType($s, 'string'));
@@ -371,13 +318,12 @@ class QueryTest extends PHPUnit_Framework_TestCase
 
     public function testUpdate(){
         $params = [];
-        $q = new Query();
         $t = new \c00\sample\Team();
         $t->active = 1;
         $t->code = "teamcode";
         $t->name = "teamname";
 
-        $q->update('user', $t);
+        $q = Qry::update('user', $t);
         $actual = $q->getSql($params);
         $keys = array_keys($params);
         $nameKey = $keys[0];
@@ -398,13 +344,12 @@ class QueryTest extends PHPUnit_Framework_TestCase
 
     public function testInsert(){
         $params = [];
-        $q = new Query();
         $t = new \c00\sample\Team();
         $t->active = 1;
         $t->code = "teamcode";
         $t->name = "teamname";
 
-        $q->insert('user', $t);
+        $q = Qry::insert('user', $t);
         $actual = $q->getSql($params);
         $keys = array_keys($params);
 
@@ -414,14 +359,13 @@ class QueryTest extends PHPUnit_Framework_TestCase
 
     public function testInsertArray(){
         $params = [];
-        $q = new Query();
         $a = [
             'name' => 'karel',
             'code' => '123',
             'active' => 1
         ];
 
-        $q->insert('user', $a);
+        $q = Qry::insert('user', $a);
         $actual = $q->getSql($params);
         $keys = array_keys($params);
 
@@ -432,8 +376,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     public function testDelete(){
         $expected = "DELETE FROM `user`";
 
-        $query = new Query();
-        $query->delete()->from('user');
+        $query = Qry::delete()->from('user');
 
         $this->assertSame($expected, $query->getSql());
     }
@@ -441,15 +384,13 @@ class QueryTest extends PHPUnit_Framework_TestCase
     public function testDelete2(){
         $expected = "DELETE FROM `user`";
 
-        $query = new Query();
-        $query->delete('user');
+        $query = Qry::delete('user');
 
         $this->assertSame($expected, $query->getSql());
     }
 
     public function testDeleteWhere(){
-        $query = new Query();
-        $query->delete()
+        $query = Qry::delete()
             ->from('user')
             ->where('id', '=', 1);
 
@@ -463,8 +404,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     }
 
     public function testSelectJoin(){
-        $query = new Query();
-        $query->select()
+        $query = Qry::select()
             ->from('user')
             ->join('session', 'session.userId', '=', 'user.id')
             ->where('id', '=', 1);
@@ -479,8 +419,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     }
 
     public function testSelectJoin2(){
-        $query = new Query();
-        $query->select()
+        $query = Qry::select()
             ->from('user')
             ->join('session', '`session`.`userId`', '=', 'user.id')
             ->join('role', 'user.roleId', '=', 'role.id')
@@ -496,8 +435,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     }
 
     public function testSelectOuterJoin(){
-        $query = new Query();
-        $query->select()
+        $query = Qry::select()
             ->from('user')
             ->outerJoin('session', 'session.userId', '=', 'user.id')
             ->join('role', 'user.roleId', '=', 'role.id')
@@ -513,8 +451,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     }
 
     public function testSelectOuterJoin2(){
-        $query = new Query();
-        $query->select()
+        $query = Qry::select()
             ->from('user')
             ->outerJoin('session', 'session.userId', '=', 'user.id', "RIGHT")
             ->where('id', '=', 1);
@@ -529,8 +466,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     }
 
     public function testWhereEncapped(){
-        $query = new Query();
-        $query->select()
+        $query = Qry::select()
             ->from('user')
             ->join('session', 'session.userId', '=', 'user.id')
             ->where('session.id', '=', 1);
@@ -545,8 +481,8 @@ class QueryTest extends PHPUnit_Framework_TestCase
     }
 
     public function testSelectFunctions(){
-        $query = new Query();
-        $query->selectFunction("avg", "cost")
+        $query = Qry::select()
+            ->selectFunction("avg", "cost")
             ->from("product");
 
         $expected = "SELECT avg(`cost`) FROM `product`";
@@ -555,8 +491,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     }
 
     public function testSelectFunctions2(){
-        $query = new Query();
-        $query->select("user")
+        $query = Qry::select("user")
             ->selectFunction("avg", "cost")
             ->selectFunction("max", "age")
             ->from("product");
@@ -568,8 +503,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     }
 
     public function testSelectFunctionsWithAlias(){
-        $query = new Query();
-        $query->select("user")
+        $query = Qry::select("user")
             ->selectFunction("avg", "cost", "your face")
             ->from("product");
 
@@ -580,8 +514,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     }
 
     public function testNullIsNot0(){
-        $q = new Query();
-        $q->select()
+        $q = Qry::select()
             ->from('user')
             ->where('status', '=', 0);
 

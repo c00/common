@@ -21,9 +21,11 @@ class Qry implements IQry
     /** @var string For debug purposes this gets filled after getSql(). */
     public $sql;
 
-    private $_select, $_from, $_limit = 0, $_offset = 0, $_object;
+    private $_select = [];
+    private $_distinct = false;
 
-    private $_selectFunctions = [];
+    private $_from, $_limit = 0, $_offset = 0, $_object;
+
     private $_where = [], $_whereParams = [];
     private $_whereIn = [];
     private $_update, $_updateParams = [];
@@ -56,28 +58,28 @@ class Qry implements IQry
     }
 
     public static function select($columns = [], $distinct = false){
-        $distinct = ($distinct) ? 'DISTINCT ' : '';
         $q = new Qry();
 
+        //Normalize to array
         if (is_string($columns)) $columns = [$columns];
-        if (count($columns) == 0) $columns = ['*'];
+
 
         if (count($columns) == 1 && $columns[0] == '*') {
-            $q->_select = "$distinct*";
-        } else {
-            $columnStrings = [];
-            //encap and add column Alias to it
-            foreach ($columns as $alias => $column) {
-                $string = $q->encap($column);
-                if (!is_numeric($alias)) $string .= " AS `$alias`";
-                $columnStrings[] = $string;
-            }
-
-            $q->_select = "$distinct" . implode(', ', $columnStrings);
+            //Just empty it. We convert it into * later on if necessary.
+            $columns = [];
         }
 
+        //encap column names.
+        foreach ($columns as $alias => &$column) {
+            $column = $q->encap($column);
+        }
+
+        $q->_distinct = $distinct;
+        $q->_select = $columns;
         $q->_type = self::TYPE_SELECT;
         return $q;
+
+        //At the end we end up with an array that goed alias => `table`.`column` for each column.
     }
 
     public static function update($table, $object, array $where = []){
@@ -180,16 +182,19 @@ class Qry implements IQry
 
 
 
-    public function max($column){
-        return $this->selectFunction("MAX", $column);
+    public function max($column, $alias = null){
+        return $this->selectFunction("MAX", $column, $alias);
     }
 
     public function selectFunction($function, $column, $alias = null){
-        if ($this->_type == null) $this->_type = self::TYPE_SELECT;
+        $column = "$function({$this->encap($column)})";
 
-        $aliasString = ($alias) ? " as ". $this->encap($alias) : '';
+        if ($alias){
+            $this->_select[$alias] = $column;
+        } else {
+            $this->_select[] = $column;
+        }
 
-        $this->_selectFunctions[] = "$function({$this->encap($column)})$aliasString";
         return $this;
     }
 
@@ -294,12 +299,22 @@ class Qry implements IQry
 
     #region private
     private function getSelectString(){
-        $parts = [];
+        //Add aliases too.
 
-        $parts = array_merge($parts, $this->_selectFunctions);
-        if ($this->_select) $parts[] = $this->_select;
+        $columns = [];
+        foreach ($this->_select as $alias => $column) {
+            $string = $column;
+            if (!is_numeric($alias)) $string .= " AS `$alias`";
+            $columnStrings[] = $string;
+            $columns[] = $string;
+        }
 
-        return "SELECT " . implode(', ', $parts);
+        //If we have nothing, show the star!
+        if (count($columns) == 0) $columns[] = "*";
+
+        $distinct = ($this->_distinct)? "DISTINCT " : "";
+
+        return "SELECT $distinct" . implode(', ', $columns);
     }
 
     private function getInsertString(){

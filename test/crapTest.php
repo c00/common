@@ -54,8 +54,8 @@ class crapTest extends \PHPUnit_Framework_TestCase
     }
 
     public function testNothing(){
-        $d = CovleDate::now()->addMonths(-7)->toSeconds();
-        $d++;
+        $a = [];
+
     }
 
 }

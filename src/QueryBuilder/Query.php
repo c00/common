@@ -22,7 +22,7 @@ class Query implements IQry
 
     public function __construct()
     {
-        $this->q = new Qry();
+
     }
 
     public function select($columns = [], $distinct = false)
@@ -70,7 +70,8 @@ class Query implements IQry
 
     public function orderBy($column, $ascending = true)
     {
-        return $this->q->orderBy($column, $ascending);
+        $this->q->orderBy($column, $ascending);
+        return $this;
     }
 
     public function getSql(&$params = null)
@@ -95,12 +96,14 @@ class Query implements IQry
 
     public function limit($limit, $offset = 0)
     {
-        return $this->q->limit($limit, $offset);
+        $this->q->limit($limit, $offset);
+        return $this;
     }
 
     public function asClass($className)
     {
-        return $this->q->asClass($className);
+        $this->q->asClass($className);
+        return $this;
     }
 
     public function getClass()
@@ -110,46 +113,63 @@ class Query implements IQry
 
     public function max($column)
     {
-        return $this->q->max($column);
+        if (!$this->q){
+            $this->q = Qry::select();
+        }
+        $this->q->max($column);
+        return $this;
     }
 
     public function selectFunction($function, $column, $alias = null)
     {
-        return $this->q->selectFunction($function, $column, $alias);
+        if (!$this->q){
+            $this->q = Qry::select();
+        }
+        $this->q->selectFunction($function, $column, $alias);
+        return $this;
     }
 
     public function from($tables)
     {
-        return $this->q->from($tables);
+        $this->q->from($tables);
+        return $this;
     }
 
     public function join($table, $column1, $operator, $column2)
     {
-        return $this->q->join($table, $column1, $operator, $column2);
+        $this->q->join($table, $column1, $operator, $column2);
+        return $this;
     }
 
     public function outerJoin($table, $column1, $operator, $column2, $direction = "LEFT")
     {
-        return $this->q->outerJoin($table, $column1, $operator, $column2, $direction);
+        $this->q->outerJoin($table, $column1, $operator, $column2, $direction);
+        return $this;
     }
 
     public function where($condition1, $operator, $condition2)
     {
-        return $this->q->where($condition1, $operator, $condition2);
+        $this->q->where($condition1, $operator, $condition2);
+        return $this;
     }
 
     public function whereIn($column, array $values)
     {
-        return $this->q->whereIn($column, $values);
+        $this->q->whereIn($column, $values);
+        return $this;
     }
 
     public function whereCount()
     {
-        return $this->q->whereCount();
+        $this->q->whereCount();
+        return $this;
     }
 
     public function checkDataType($object, $allowedTypes)
     {
+        if (!$this->q){
+            $this->q = Qry::select();
+        }
         return $this->q->checkDataType($object, $allowedTypes);
     }
 
