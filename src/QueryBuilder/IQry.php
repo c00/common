@@ -18,7 +18,6 @@ interface IQry {
     public function asClass($className);
     public function getClass();
     public function max($column);
-    public function selectFunction($function, $column, $alias = null);
     public function from($tables);
     public function join($table, $column1, $operator, $column2);
     public function outerJoin($table, $column1, $operator, $column2, $direction = "LEFT");

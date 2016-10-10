@@ -525,4 +525,21 @@ class QueryTest extends PHPUnit_Framework_TestCase
         $expected = "SELECT * FROM `user` WHERE `status` = :{$key}";
         $this->assertEquals($expected, $sql);
     }
+
+    public function testFromAlias(){
+        $q = Qry::select()->from(['u' => 'user']);
+        $expected = "SELECT * FROM `user` AS `u`";
+
+        $this->assertEquals($expected, $q->getSql());
+    }
+
+    public function testJoinAlias(){
+        $q = Qry::select()
+            ->from(['u' => 'user'])
+            ->join (['g' => 'group'], "u.groupId", '=', "g.id");
+
+        $expected = "SELECT * FROM `user` AS `u` JOIN `group` AS `g` ON `u`.`groupId` = `g`.`id`";
+
+        $this->assertEquals($expected, $q->getSql());
+    }
 }

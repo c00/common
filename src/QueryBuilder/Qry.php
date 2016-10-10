@@ -23,8 +23,9 @@ class Qry implements IQry
 
     private $_select = [];
     private $_distinct = false;
+    private $_from = [];
 
-    private $_from, $_limit = 0, $_offset = 0, $_object;
+    private $_limit = 0, $_offset = 0, $_object;
 
     private $_where = [], $_whereParams = [];
     private $_whereIn = [];
@@ -127,7 +128,7 @@ class Qry implements IQry
 
     public function getSql(&$params = null){
         if ($this->_type == self::TYPE_SELECT){
-            $sql = $this->getSelectString() . $this->_from . $this->_join . $this->getWhereString() . $this->getOrderByString() . $this->getLimit();
+            $sql = $this->getSelectString() . $this->getFromString() . $this->_join . $this->getWhereString() . $this->getOrderByString() . $this->getLimit();
             $params = $this->_whereParams;
         } else if ($this->_type == self::TYPE_UPDATE){
             $sql = $this->_update . $this->getSetString() . $this->getWhereString();
@@ -136,10 +137,10 @@ class Qry implements IQry
             $sql = $this->_insert . $this->getInsertString();
             $params = array_merge($this->_insertParams, $this->_whereParams);
         } else if ($this->_type == self::TYPE_DELETE){
-            $sql = "DELETE" . $this->_from . $this->getWhereString();
+            $sql = "DELETE" . $this->getFromString() . $this->getWhereString();
             $params = array_merge($this->_insertParams, $this->_whereParams);
         } else {
-            throw new \Exception("Not implemented");
+            throw new QueryBuilderException("Not implemented");
         }
 
         $this->sql = $sql;
@@ -200,27 +201,52 @@ class Qry implements IQry
         return $this;
     }
 
-
-
     public function from($tables){
         $this->checkDataType($tables, ['string', 'array']);
 
-        //Make array
+        //Normalize to array
         if (is_string($tables)) $tables = [$tables];
 
         $tables = $this->encapArray($tables);
 
-        $this->_from = " FROM " . implode(', ', $tables) . "";
+        $this->_from = array_merge($this->_from, $tables);
 
         return $this;
     }
 
+    public function getFromString(){
+        $tables = [];
+        foreach ($this->_from as $alias => $table) {
+            $string = $table;
+            if (!is_numeric($alias)) $string .= " AS `$alias`";
+            $columnStrings[] = $string;
+            $tables[] = $string;
+        }
+
+
+        if (count($tables) == 0) {
+            throw new QueryBuilderException("No FROM clause!");
+        }
+
+        return " FROM " . implode(', ', $tables);
+    }
+
     public function join($table, $column1, $operator, $column2){
+        $alias = "";
+        if (is_array($table)){
+            reset($table);
+            $key = key($table);
+            if (!is_numeric($key)) $alias = " AS ". $this->encap($key);
+
+            //Make table to be a string.
+            $table = $table[$key];
+        }
 
         $column1 = $this->encap($column1);
         $column2 = $this->encap($column2);
+        $table = $this->encap($table);
 
-        $this->_join .= " JOIN `$table` ON $column1 $operator $column2";
+        $this->_join .= " JOIN {$table}{$alias} ON $column1 $operator $column2";
 
         return $this;
     }

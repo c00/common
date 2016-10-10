@@ -18,3 +18,6 @@ add some prose along the way.
 #Todo:
 - Separate CovleDate and Settings to their own projects. They should not 
   be part of this project.
+
+## QueryBuilder
+- Add `->and` and `->or` support for where clauses and Join clauses
