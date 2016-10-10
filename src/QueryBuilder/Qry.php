@@ -431,6 +431,16 @@ class Qry implements IQry
         return " ORDER BY " . implode(', ', $strings);
     }
 
+    private function shouldEscape(array &$condition){
+        $check = $condition['condition2'];
+        if (substr($check, 0, 2) == '**'){
+            $condition['condition2'] = $this->encap(substr($check, 2));
+            return false;
+        }
+
+        return true;
+    }
+
     private function getWhereString(){
         if (count($this->_where) == 0 && count($this->_whereIn) == 0) return '';
 
@@ -442,6 +452,12 @@ class Qry implements IQry
             //allow IS NULL and IS NOT NULL
             if ($condition['condition2'] === null){
                 $strings[] = "{$condition['condition1']} {$condition['operator']} NULL";
+                continue;
+            }
+
+            //Don't escape condition 2 starting with **
+            if (!$this->shouldEscape($condition)){
+                $strings[] = "{$condition['condition1']} {$condition['operator']} {$condition['condition2']}";
                 continue;
             }
 

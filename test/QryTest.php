@@ -542,4 +542,14 @@ class QueryTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals($expected, $q->getSql());
     }
+
+    public function testDontEscape(){
+        $q = Qry::select()
+            ->from(['u' => 'user'])
+            ->where('birthday', '>', '**lastseen');
+
+        $expected = "SELECT * FROM `user` AS `u` WHERE `birthday` > `lastseen`";
+
+        $this->assertEquals($expected, $q->getSql());
+    }
 }
