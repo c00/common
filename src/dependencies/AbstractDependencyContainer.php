@@ -20,8 +20,12 @@ abstract class AbstractDependencyContainer
         //Not much of anything.
     }
 
-    public function add($dependency){
-        $name = get_class($dependency);
+    public function add($dependency, $name = null){
+        if (!$name) {
+            //We default to the class name. When wanting to add more dependencies of the same class, add a name.
+            $name = get_class($dependency);
+        }
+
         if (isset($this->dependencies[$name])){
             //Maybe throw an error if you want.
             return;

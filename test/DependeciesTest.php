@@ -77,4 +77,15 @@ class DependeciesTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse(method_exists($team, "getDc"));
     }
 
+    public function testAddToDCWithName(){
+        $depName = "Megan";
+
+        $dc = new DependencyContainer();
+        $dc->add(new DatabaseWithTrait(), $depName);
+
+        $this->assertNull($dc->getDependency(DatabaseWithTrait::class));
+        $this->assertTrue($dc->getDependency($depName) instanceof DatabaseWithTrait);
+
+    }
+
 }
