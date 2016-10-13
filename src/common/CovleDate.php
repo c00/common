@@ -111,9 +111,7 @@ class CovleDate{
         return $this->dateTime->format('F d, Y');
     }
 
-    function toString($format = null){
-        if (!$format) $format = 'Y-m-d H:i:s';
-
+    function toString($format = 'Y-m-d H:i:s'){
         return $this->dateTime->format($format);
     }
 
@@ -158,8 +156,8 @@ class CovleDate{
         return new CovleDate($dt);
     }
 
-    static function fromString($s){
-        $dt = DateTime::createFromFormat("Y-m-d H:i:s", $s);
+    static function fromString($s, $format = "Y-m-d H:i:s"){
+        $dt = DateTime::createFromFormat($format, $s);
         return new CovleDate($dt);
     }
 
