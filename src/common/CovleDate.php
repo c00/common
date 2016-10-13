@@ -111,8 +111,10 @@ class CovleDate{
         return $this->dateTime->format('F d, Y');
     }
 
-    function toString(){
-        return $this->dateTime->format('Y-m-d H:i:s');
+    function toString($format = null){
+        if (!$format) $format = 'Y-m-d H:i:s';
+
+        return $this->dateTime->format($format);
     }
 
     function toDateString(){
