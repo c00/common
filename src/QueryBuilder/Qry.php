@@ -43,6 +43,11 @@ class Qry implements IQry
     }
 
     #region statics
+    /**
+     * @param $table
+     * @param $object
+     * @return Qry
+     */
     public static function insert($table, $object){
         $q = new Qry;
 
@@ -58,6 +63,11 @@ class Qry implements IQry
         return $q;
     }
 
+    /**
+     * @param array $columns
+     * @param bool $distinct
+     * @return Qry
+     */
     public static function select($columns = [], $distinct = false){
         $q = new Qry();
 
@@ -83,6 +93,12 @@ class Qry implements IQry
         //At the end we end up with an array that goed alias => `table`.`column` for each column.
     }
 
+    /**
+     * @param $table
+     * @param $object
+     * @param array $where
+     * @return Qry
+     */
     public static function update($table, $object, array $where = []){
         $q = new Qry();
 
@@ -103,6 +119,10 @@ class Qry implements IQry
         return $q;
     }
 
+    /**
+     * @param null $table
+     * @return Qry
+     */
     public static function delete($table = null){
         $q = new Qry();
 
@@ -161,6 +181,11 @@ class Qry implements IQry
         return $this->_insertParams;
     }
 
+    /**
+     * @param $limit
+     * @param int $offset
+     * @return Qry
+     */
     public function limit($limit, $offset = 0){
         $this->checkDataType($limit, 'numeric');
         $this->checkDataType($offset, 'numeric');
@@ -171,6 +196,10 @@ class Qry implements IQry
         return $this;
     }
 
+    /**
+     * @param $className
+     * @return Qry
+     */
     public function asClass($className){
         $this->_returnClass = $className;
 
@@ -185,10 +214,21 @@ class Qry implements IQry
         return $this->_type;
     }
 
+    /**
+     * @param $column
+     * @param null $alias
+     * @return Qry
+     */
     public function max($column, $alias = null){
         return $this->selectFunction("MAX", $column, $alias);
     }
 
+    /**
+     * @param $function
+     * @param $column
+     * @param null $alias
+     * @return Qry
+     */
     public function selectFunction($function, $column, $alias = null){
         $column = "$function({$this->encap($column)})";
 
@@ -201,6 +241,10 @@ class Qry implements IQry
         return $this;
     }
 
+    /**
+     * @param $tables
+     * @return Qry
+     */
     public function from($tables){
         $this->checkDataType($tables, ['string', 'array']);
 
@@ -231,6 +275,13 @@ class Qry implements IQry
         return " FROM " . implode(', ', $tables);
     }
 
+    /**
+     * @param $table
+     * @param $column1
+     * @param $operator
+     * @param $column2
+     * @return Qry
+     */
     public function join($table, $column1, $operator, $column2){
         $alias = "";
         if (is_array($table)){
@@ -251,6 +302,14 @@ class Qry implements IQry
         return $this;
     }
 
+    /**
+     * @param $table
+     * @param $column1
+     * @param $operator
+     * @param $column2
+     * @param string $direction
+     * @return Qry
+     */
     public function outerJoin($table, $column1, $operator, $column2, $direction = "LEFT"){
 
         $column1 = $this->encap($column1);
@@ -261,6 +320,12 @@ class Qry implements IQry
         return $this;
     }
 
+    /**
+     * @param $condition1
+     * @param $operator
+     * @param $condition2
+     * @return Qry
+     */
     public function where($condition1, $operator, $condition2){
         $condition = [
             'condition1' => $condition1,
@@ -273,6 +338,11 @@ class Qry implements IQry
         return $this;
     }
 
+    /**
+     * @param $column
+     * @param array $values
+     * @return Qry
+     */
     public function whereIn($column, array $values){
         if (count($values) == 0) return $this;
 

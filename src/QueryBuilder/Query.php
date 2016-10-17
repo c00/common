@@ -25,24 +25,44 @@ class Query implements IQry
 
     }
 
+    /**
+     * @param array $columns
+     * @param bool $distinct
+     * @return Query
+     */
     public function select($columns = [], $distinct = false)
     {
         $this->q = Qry::select($columns, $distinct);
         return $this;
     }
 
+    /**
+     * @param $table
+     * @param $object
+     * @return Query
+     */
     public function insert($table, $object)
     {
         $this->q = Qry::insert($table, $object);
         return $this;
     }
 
+    /**
+     * @param $table
+     * @param $object
+     * @param array $where
+     * @return Query
+     */
     public function update($table, $object, array $where = [])
     {
         $this->q = Qry::update($table, $object, $where);
         return $this;
     }
 
+    /**
+     * @param null $table
+     * @return Query
+     */
     public function delete($table = null)
     {
         $this->q = Qry::delete($table);
@@ -72,6 +92,11 @@ class Query implements IQry
         return $this->q->getType();
     }
 
+    /**
+     * @param $column
+     * @param bool $ascending
+     * @return Query
+     */
     public function orderBy($column, $ascending = true)
     {
         $this->q->orderBy($column, $ascending);
@@ -98,12 +123,21 @@ class Query implements IQry
         return $this->q->getInsertParams();
     }
 
+    /**
+     * @param $limit
+     * @param int $offset
+     * @return Query
+     */
     public function limit($limit, $offset = 0)
     {
         $this->q->limit($limit, $offset);
         return $this;
     }
 
+    /**
+     * @param $className
+     * @return Query
+     */
     public function asClass($className)
     {
         $this->q->asClass($className);
@@ -115,6 +149,10 @@ class Query implements IQry
         return $this->q->getClass();
     }
 
+    /**
+     * @param $column
+     * @return Query
+     */
     public function max($column)
     {
         if (!$this->q){
@@ -124,6 +162,12 @@ class Query implements IQry
         return $this;
     }
 
+    /**
+     * @param $function
+     * @param $column
+     * @param null $alias
+     * @return Query
+     */
     public function selectFunction($function, $column, $alias = null)
     {
         if (!$this->q){
@@ -133,30 +177,60 @@ class Query implements IQry
         return $this;
     }
 
+    /**
+     * @param $tables
+     * @return Query
+     */
     public function from($tables)
     {
         $this->q->from($tables);
         return $this;
     }
 
+    /**
+     * @param $table
+     * @param $column1
+     * @param $operator
+     * @param $column2
+     * @return Query
+     */
     public function join($table, $column1, $operator, $column2)
     {
         $this->q->join($table, $column1, $operator, $column2);
         return $this;
     }
 
+    /**
+     * @param $table
+     * @param $column1
+     * @param $operator
+     * @param $column2
+     * @param string $direction
+     * @return Query
+     */
     public function outerJoin($table, $column1, $operator, $column2, $direction = "LEFT")
     {
         $this->q->outerJoin($table, $column1, $operator, $column2, $direction);
         return $this;
     }
 
+    /**
+     * @param $condition1
+     * @param $operator
+     * @param $condition2
+     * @return Query
+     */
     public function where($condition1, $operator, $condition2)
     {
         $this->q->where($condition1, $operator, $condition2);
         return $this;
     }
 
+    /**
+     * @param $column
+     * @param array $values
+     * @return Query
+     */
     public function whereIn($column, array $values)
     {
         $this->q->whereIn($column, $values);
