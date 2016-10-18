@@ -34,6 +34,7 @@ class Qry implements IQry
     private $_type;
     private $_join = '';
     private $_orderBy = [];
+    private $_groupBy = [];
 
     private $_returnClass = '';
     
@@ -136,7 +137,7 @@ class Qry implements IQry
     #region public
     /** Add ORDER BY clause.
      * to order on more than one column, call orderBy() several times.
-     * @param $column string colum to add to ordering.
+     * @param $column string column to add to ordering.
      * @param bool $ascending
      * @return Qry
      */
@@ -146,9 +147,26 @@ class Qry implements IQry
         return $this;
     }
 
+    /** Add GROUP BY clause.
+     *
+     * @param $columns array|string column(s) to group by.
+     * @return Qry
+     * @throws QueryBuilderException
+     */
+    public function groupBy($columns){
+        if (is_string($columns)) $columns = [$columns];
+        if (!is_array($columns)){
+            throw new QueryBuilderException("Group by requries a string or array");
+        }
+
+        $this->_groupBy = array_merge($this->_groupBy, $columns);
+
+        return $this;
+    }
+
     public function getSql(&$params = null){
         if ($this->_type == self::TYPE_SELECT){
-            $sql = $this->getSelectString() . $this->getFromString() . $this->_join . $this->getWhereString() . $this->getOrderByString() . $this->getLimit();
+            $sql = $this->getSelectString() . $this->getFromString() . $this->_join . $this->getWhereString() . $this->getGroupByString() . $this->getOrderByString() . $this->getLimit();
             $params = $this->_whereParams;
         } else if ($this->_type == self::TYPE_UPDATE){
             $sql = $this->_update . $this->getSetString() . $this->getWhereString();
@@ -216,11 +234,29 @@ class Qry implements IQry
 
     /**
      * @param $column
-     * @param null $alias
+     * @param string $alias
      * @return Qry
      */
     public function max($column, $alias = null){
         return $this->selectFunction("MAX", $column, $alias);
+    }
+
+    /**
+     * @param $column
+     * @param string $alias
+     * @return Qry
+     */
+    public function count($column, $alias = null){
+        return $this->selectFunction("COUNT", $column, $alias);
+    }
+
+    /**
+     * @param $column
+     * @param string $alias
+     * @return Qry
+     */
+    public function avg($column, $alias = null){
+        return $this->selectFunction("AVG", $column, $alias);
     }
 
     /**
@@ -499,6 +535,17 @@ class Qry implements IQry
         }
 
         return " ORDER BY " . implode(', ', $strings);
+    }
+
+    private function getGroupByString(){
+        if (count($this->_groupBy) == 0) return '';
+
+        $strings = [];
+        foreach ($this->_groupBy as $item) {
+            $strings[] = $this->encap($item);
+        }
+
+        return " GROUP BY " . implode(', ', $strings);
     }
 
     private function shouldEscape(array &$condition){

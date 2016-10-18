@@ -552,4 +552,18 @@ class QueryTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals($expected, $q->getSql());
     }
+
+    public function testGroupBy(){
+
+
+        $q = Qry::select('l.*')
+            ->count('m.location', 'count')
+            ->avg('m.happiness', 'avg')
+            ->from(['m' => 'main'])
+            ->join(['l' => 'location'], 'l.id', '=', 'm.locationId')
+            ->groupBy('m.location');
+
+        $expected = "SELECT `l`.*, COUNT(`m`.`location`) AS `count`, AVG(`m`.`happiness`) AS `avg` FROM `main` AS `m` JOIN `location` AS `l` ON `l`.`id` = `m`.`locationId` GROUP BY `m`.`location`";
+        $this->assertEquals($expected, $q->getSql());
+    }
 }
