@@ -47,8 +47,9 @@ class MappedTeam extends AbstractDatabaseObject
 
         //Set datatypes 3
         $this->setPropertyTypes([
-            'code' => 'double',
-            'created' => CovleDate::class
+            'code' => 'float',
+            'created' => CovleDate::class,
+            'active' => 'bool'
         ]);
 
     }

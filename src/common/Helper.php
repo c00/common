@@ -159,10 +159,13 @@ class Helper
     /** Attempts to convert an array into an object.
      * @param $array array The array to convert
      * @param $type string|object The class name or an instance of the class to convert to
+     * @param array $mapping Optional - The mapping used for conversion
      * @return bool|object The object, or false on failure.
      */
-    public static function objectFromArray($array, $type){
+    public static function objectFromArray($array, $type, $mapping = []){
         $className = (is_object($type)) ? get_class($type) : $type;
+
+        if (!is_array($mapping)) $mapping = [];
         
         if (!class_exists($className)) return false;
 
@@ -172,7 +175,10 @@ class Helper
 
         $class_vars = get_class_vars($className);
         foreach ($class_vars as $name => $item) {
-            if (isset($array[$name])) $object->$name = $array[$name];
+            //Is there a mapping entry?
+            $column = (isset($mapping[$name])) ? $mapping[$name] : $name;
+
+            if (isset($array[$column])) $object->$name = $array[$name];
         }
 
         return $object;

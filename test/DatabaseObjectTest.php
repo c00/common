@@ -11,11 +11,12 @@ namespace test;
 
 use c00\common\CovleDate;
 use c00\sample\MappedTeam;
-use c00\sample\Team;
 use c00\sample\User;
 
 class DatabaseObjectTest extends \PHPUnit_Framework_TestCase
 {
+    const TEST_DATE_SECONDS = 507303000;
+
     public function interfaceTest(){
 
     }
@@ -55,7 +56,54 @@ class DatabaseObjectTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals("int", $a['id']);
         $this->assertEquals(CovleDate::class, $a['created']);
-        $this->assertEquals("double", $a['code']);
-        $this->assertEquals("int", $a['active']);
+        $this->assertEquals("float", $a['code']);
+        $this->assertEquals("bool", $a['active']);
+    }
+
+
+    public function testFromArray(){
+        $input = [
+            'TEAMID' => '12',
+            'TEAMNAME' => 'Dudemeisters',
+            'TEAMCODE' => "12345.9",
+            'TEAMSTATUS' => "1",
+            'created' => self::TEST_DATE_SECONDS
+        ];
+
+        $team = MappedTeam::fromArray($input);
+
+        //Test mapping
+        $this->assertEquals(12, $team->id);
+        $this->assertEquals(12345.9, $team->code);
+        $this->assertEquals(1, $team->active);
+        $this->assertEquals('Dudemeisters', $team->name);
+
+        //Test datatypes
+        $this->assertTrue(is_int($team->id));
+        $this->assertTrue(is_float($team->code));
+        $this->assertTrue(is_bool($team->active));
+        $this->assertTrue($team->created instanceof CovleDate);
+    }
+
+    public function testToArray(){
+        $team = new MappedTeam();
+        $team->id = 12;
+        $team->code = 12345.9;
+        $team->active = true;
+        $team->created = CovleDate::fromSeconds(self::TEST_DATE_SECONDS);
+        $team->name = "Dudemeisters";
+
+        $output = $team->toArray();
+
+        //Check mapping
+        $this->assertSame(12, $output['TEAMID']);
+        $this->assertSame('Dudemeisters', $output['TEAMNAME']);
+        $this->assertSame(12345.9, $output['TEAMCODE']);
+        $this->assertSame(1, $output['TEAMSTATUS']);
+        $this->assertSame(self::TEST_DATE_SECONDS, $output['created']);
+
+        //Check datatypes
+        $this->assertTrue(is_int($output['created']));
+        $this->assertTrue(is_int($output['TEAMSTATUS']));
     }
 }

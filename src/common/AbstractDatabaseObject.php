@@ -15,7 +15,6 @@ abstract class AbstractDatabaseObject implements IDatabaseObject
     private $scalarTypes = [
         'int',
         'float',
-        'double',
         'string',
         'bool'
     ];
@@ -30,24 +29,47 @@ abstract class AbstractDatabaseObject implements IDatabaseObject
     public static function fromArray($array)
     {
         $o = new static;
+        $o->objectFromArray($array);
 
-        $t = H::objectFromArray($array, $o);
-        if ($t instanceof self){
-            return $t;
-        }
-
-        return null;
+        return $o;
     }
 
     /** Converts the object into an array.
      * Use this to 'prepare' an object to go into the database. Override this function to do any transformations.
+     * @param $keepNulls bool Switch to keep Null values or omit them from the result.
      * @return array
      */
-    public function toArray()
+    public function toArray($keepNulls = false)
     {
-        $array = H::objectToArray($this);
+        $mapping = (is_array($this->_mapping)) ? $this->_mapping : [];
 
-        return $array;
+        $result = [];
+        foreach(get_class_vars(static::class) as $key => $value){
+            if((!isset($this->$key) || $this->$key === null) && !$keepNulls) {
+                //Go to the next one.
+                continue;
+            }
+
+            //Get mapped column name.
+            $column = (isset($mapping[$key])) ? $mapping[$key] : $key;
+
+            //toArray on nested values
+            if (is_object($this->$key) && $this->$key instanceof IDatabaseObject){
+                //To Array on nested DatabaseObjects
+                $result[$column] = $this->$key->toArray();
+            } else if (is_object($this->$key) && $this->$key instanceof IDatabaseProperty){
+                //To Db on DatabaseProperties
+                $result[$column] = $this->$key->toDb();
+            } else if (is_bool($this->$key)){
+                //Convert bools to 1 or 0
+                $result[$column] = ($this->$key) ? 1 : 0;
+            } else {
+                $result[$column] = $this->$key;
+            }
+
+
+        }
+        return $result;
     }
 
     /** Converts the object into an array that can be passed on to a client.
@@ -61,6 +83,8 @@ abstract class AbstractDatabaseObject implements IDatabaseObject
         return $array;
     }
 
+
+    //region Mapping and DataTypes
     public function _getMapping(){
         return $this->_mapping;
     }
@@ -131,5 +155,66 @@ abstract class AbstractDatabaseObject implements IDatabaseObject
     private function implementsDatabaseProperty($type){
         return in_array(IDatabaseProperty::class, class_implements($type));
     }
+    //endregion
+
+    //region Helpers
+    /** Attempts to convert an array into an object.
+     * @param $array array The array to convert
+     * @return bool Result
+     */
+    private function objectFromArray($array){
+        if (!is_array($array)) return false;
+
+        $mapping = (is_array($this->_mapping)) ? $this->_mapping : [];
+
+
+
+        $class_vars = get_class_vars(static::class);
+        foreach ($class_vars as $name => $item) {
+            //Is there a mapping entry?
+            $column = (isset($mapping[$name])) ? $mapping[$name] : $name;
+
+            if (isset($array[$column])) {
+                //Get the value in the correct type.
+                $value = $this->toType($name, $array[$column]);
+
+                $this->$name = $value;
+            }
+        }
+
+        return true;
+    }
+
+    private function toType($key, $value){
+        //Do we have a mapping?
+        if (!is_array($this->_dataTypes)) return $value;
+        if (count($this->_dataTypes) == 0) return $value;
+
+        //Get the desired type
+        $type = H::getArrayValue($this->_dataTypes, $key, null);
+        if (!$type) return $value;
+
+        if (!$this->isScalarType($type)){
+            //DatabaseProperty?
+            if ($this->implementsDatabaseProperty($type)){
+                return $type::fromDb($value);
+            }
+        } else if ($type == 'int') {
+            return (int) $value;
+        } else if ($type == 'float') {
+            return (float) $value;
+        } else if ($type == 'string') {
+            return (string) $value;
+        } else if ($type == 'bool') {
+            return (bool) $value;
+        }
+
+
+        //Else Just return as string.
+        return $value;
+    }
+
+    //endregion
+
 
 }

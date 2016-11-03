@@ -54,7 +54,15 @@ class crapTest extends \PHPUnit_Framework_TestCase
     }
 
     public function testNothing(){
-        $a = [];
+
+
+        $type = CovleDate::class;
+
+        $date = $type::now();
+
+        //method_exists()
+
+        $this->assertTrue($date instanceof CovleDate);
 
     }
 
