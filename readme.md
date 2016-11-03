@@ -16,8 +16,10 @@ Is not really available. But feel free to send me messages and I might
 add some prose along the way.
 
 #Todo:
-- Separate CovleDate and Settings to their own projects. They should not 
-  be part of this project.
+## Version 1
+- Allow mapping of database columns to property names
+- Allow mapping of datatypes.
 
 ## QueryBuilder
 - Add `->and` and `->or` support for where clauses and Join clauses
+

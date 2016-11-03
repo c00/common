@@ -19,6 +19,8 @@ class Team extends AbstractDatabaseObject
     public $active;
     public $image;
 
+    protected $_mapping = ['apple', 'orange'];
+
     public function __construct()
     {
 

@@ -13,7 +13,8 @@ use \DateTime, \DateInterval;
  * License: MIT
  * This comes as-is, no guarantees, no support, use at your own risk.
  */
-class CovleDate{
+class CovleDate implements IDatabaseProperty
+{
 
     /**
      * @var DateTime
@@ -200,5 +201,22 @@ class CovleDate{
     function addYears($years){
         $this->dateTime->add(DateInterval::createFromDateString("$years Years"));
         return $this;
+    }
+
+    /** Turns a database value (column) into an object.
+     * @param int $value Time in seconds
+     * @return IDatabaseProperty
+     */
+    public static function fromDb($value)
+    {
+        return self::fromSeconds($value);
+    }
+
+    /**
+     * @return int Time in seconds
+     */
+    public function toDb()
+    {
+        return $this->toSeconds();
     }
 }
