@@ -44,7 +44,9 @@ abstract class AbstractDatabaseObject implements IDatabaseObject
         $mapping = (is_array($this->_mapping)) ? $this->_mapping : [];
 
         $result = [];
-        foreach(get_class_vars(static::class) as $key => $value){
+
+
+        foreach($this->getClassVars() as $key){
             if((!isset($this->$key) || $this->$key === null) && !$keepNulls) {
                 //Go to the next one.
                 continue;
@@ -169,8 +171,8 @@ abstract class AbstractDatabaseObject implements IDatabaseObject
 
 
 
-        $class_vars = get_class_vars(static::class);
-        foreach ($class_vars as $name => $item) {
+        $class_vars = $this->getClassVars();
+        foreach ($class_vars as $name) {
             //Is there a mapping entry?
             $column = (isset($mapping[$name])) ? $mapping[$name] : $name;
 
@@ -212,6 +214,13 @@ abstract class AbstractDatabaseObject implements IDatabaseObject
 
         //Else Just return as string.
         return $value;
+    }
+
+    private function getClassVars(){
+        $abstractVars = array_keys(get_class_vars(self::class));
+        $staticVars = array_keys(get_class_vars(static::class));
+
+        return array_diff($staticVars, $abstractVars);
     }
 
     //endregion

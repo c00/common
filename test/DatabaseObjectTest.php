@@ -106,4 +106,5 @@ class DatabaseObjectTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue(is_int($output['created']));
         $this->assertTrue(is_int($output['TEAMSTATUS']));
     }
+
 }

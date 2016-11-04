@@ -9,7 +9,7 @@
 use c00\QueryBuilder\Qry;
 use c00\QueryBuilder\QueryBuilderException;
 
-class QueryTest extends PHPUnit_Framework_TestCase
+class QryTest extends PHPUnit_Framework_TestCase
 {
     public function testSelect(){
         $expected = "SELECT * FROM `user`";
