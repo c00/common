@@ -208,6 +208,8 @@ class Qry implements IQry
         $this->checkDataType($limit, 'numeric');
         $this->checkDataType($offset, 'numeric');
 
+        if ($limit == 0) $limit = null;
+
         $this->_limit = $limit;
         $this->_offset = $offset;
 

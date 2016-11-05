@@ -139,4 +139,24 @@ class AbstractDatabaseTest extends \PHPUnit_Framework_TestCase
         $this->db->deleteRows($q);
     }
 
+    public function testLimitBug(){
+        //After calling getRow(), Database adds a LIMIT to the query. It should remove this afterwards. Otherwise it's confusing.
+        $expected = "SELECT * FROM `team`";
+
+        $q = Qry::select()
+            ->from(self::TABLE_TEAM);
+
+        $actual = $q->getSql();
+        $this->assertEquals($expected, $actual);
+
+        $this->db->getRow($q);
+
+        $actual2 = $q->getSql();
+        $this->assertEquals($expected, $actual2);
+
+
+    }
+
+
+
 }

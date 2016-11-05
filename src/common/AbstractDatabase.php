@@ -95,6 +95,8 @@ abstract class AbstractDatabase
         if (!isset($result[0])) {
             throw new \Exception("No record found", self::NO_RECORD_FOUND);
         }
+
+        $q->limit(0);
         return $result[0];
     }
     
