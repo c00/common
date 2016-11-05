@@ -246,6 +246,26 @@ class Qry implements IQry
      * @param string $alias
      * @return Qry
      */
+    public function sum($column, $alias = null){
+        return $this->selectFunction("SUM", $column, $alias);
+    }
+
+    /**
+     * @param $column
+     * @param string $alias
+     * @return Qry
+     */
+    public function min($column, $alias = null){
+        return $this->selectFunction("MIN", $column, $alias);
+    }
+
+
+
+    /**
+     * @param $column
+     * @param string $alias
+     * @return Qry
+     */
     public function count($column, $alias = null){
         return $this->selectFunction("COUNT", $column, $alias);
     }
