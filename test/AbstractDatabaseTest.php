@@ -157,6 +157,21 @@ class AbstractDatabaseTest extends \PHPUnit_Framework_TestCase
 
     }
 
+    public function testInvalidParametersBug(){
+        $q = Qry::select('l.*')
+            ->count('m.created', 'count')
+            ->avg('m.teamId', 'avg')
+            ->from(['m' => 'teamsession'])
+            ->join(['l' => 'team'], 'l.id', '=', 'm.teamId')
+            ->where('expires', '>', '1476242082')
+            ->where('expires', '<', '1478837682')
+            ->where('m.teamId', 'IS NOT', null)
+            ->whereIn('m.created', [10, 20, 30]);
+
+        $this->db->getRows($q);
+
+    }
+
 
 
 }

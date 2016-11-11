@@ -8,7 +8,7 @@
 
 namespace c00\QueryBuilder;
 
-
+use c00\common\Helper as H;
 use c00\common\IDatabaseObject;
 
 class Qry implements IQry
@@ -494,7 +494,7 @@ class Qry implements IQry
         $columns = [];
         $values = [];
         foreach ($array as $key => $value) {
-            $paramId = uniqid();
+            $paramId = H::getUniqueId();
             $this->_insertParams[$paramId] = $value;
 
             $columns[] = $key;
@@ -523,7 +523,7 @@ class Qry implements IQry
         $this->_updateParams = [];
         $strings = [];
         foreach ($array as $key => $value) {
-            $paramId = uniqid();
+            $paramId = H::getUniqueId();
             $this->_updateParams[$paramId] = $value;
 
             $strings[] = "`{$key}` = :$paramId";
@@ -600,7 +600,7 @@ class Qry implements IQry
                 continue;
             }
 
-            $conditionId = uniqid();
+            $conditionId = H::getUniqueId();
             $this->_whereParams[$conditionId] = $condition['condition2'];
 
             $strings[] = "{$condition['condition1']} {$condition['operator']} :$conditionId";
@@ -613,7 +613,7 @@ class Qry implements IQry
 
             $inValues = [];
             foreach ($condition['values'] as $value) {
-                $valueId = uniqid();
+                $valueId = H::getUniqueId();
                 $this->_whereParams[$valueId] = $value;
                 $inValues[] = $valueId;
             }

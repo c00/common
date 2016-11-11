@@ -183,4 +183,8 @@ class Helper
 
         return $object;
     }
+
+    public static function getUniqueId($length = 8){
+        return bin2hex(openssl_random_pseudo_bytes($length));
+    }
 }

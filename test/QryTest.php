@@ -109,6 +109,34 @@ class QryTest extends PHPUnit_Framework_TestCase
         $this->assertSame($expected, $sql);
     }
 
+    public function testSelectWhereInBug(){
+        $query = Qry::select()->from('user')->whereIn('id', [0]);
+
+        $params = [];
+        $sql = $query->getSql($params);
+        $keys = array_keys($params);
+
+        $expected = "SELECT * FROM `user` WHERE `id` IN (:{$keys[0]})";
+
+        $this->assertSame($expected, $sql);
+    }
+
+    public function testSelectWhereInBug2(){
+        $query = Qry::select()
+            ->from('user')
+            ->where('email', '=', 'coo@covle.com')
+            ->whereIn('id', [10, 20, 30]);
+
+        $params = [];
+        $sql = $query->getSql($params);
+        $keys = array_keys($params);
+        $this->assertEquals($params, $query->getWhereParams());
+
+        $expected = "SELECT * FROM `user` WHERE `email` = :{$keys[0]} AND `id` IN (:{$keys[1]}, :{$keys[2]}, :{$keys[3]})";
+
+        $this->assertSame($expected, $sql);
+    }
+
     public function testSelectWhereIn2(){
         $query = Qry::select()
             ->from('user')
