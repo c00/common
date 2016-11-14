@@ -29,6 +29,7 @@ class Qry implements IQry
 
     private $_where = [], $_whereParams = [];
     private $_whereIn = [];
+    private $_whereNotIn = [];
     private $_update, $_updateParams = [];
     private $_insert, $_insertParams = [];
     private $_type;
@@ -413,6 +414,23 @@ class Qry implements IQry
         return $this;
     }
 
+    /**
+     * @param $column
+     * @param array $values
+     * @return Qry
+     */
+    public function whereNotIn($column, array $values){
+        if (count($values) == 0) return $this;
+
+
+        $this->_whereNotIn[] = [
+            'column' => $column,
+            'values' => $values
+        ];
+
+        return $this;
+    }
+
     public function whereCount(){
         return count($this->_where);
     }
@@ -581,8 +599,9 @@ class Qry implements IQry
     }
 
     private function getWhereString(){
-        if (count($this->_where) == 0 && count($this->_whereIn) == 0) return '';
+        if (count(array_merge($this->_where, $this->_whereIn, $this->_whereNotIn)) == 0) return '';
 
+        //WHERE clause
         $this->_whereParams = [];
         $strings = [];
         foreach ($this->_where as $condition) {
@@ -606,6 +625,7 @@ class Qry implements IQry
             $strings[] = "{$condition['condition1']} {$condition['operator']} :$conditionId";
         }
 
+        //WHERE IN clause
         foreach ($this->_whereIn as $condition) {
             //Every whereIn has a column and an array of values for the IN part.
 
@@ -622,6 +642,27 @@ class Qry implements IQry
 
             if (count($inValues) > 0){
                 $strings[] = "{$condition['column']} IN (:$inString)";
+            }
+
+        }
+
+        //WHERE NOT IN clause
+        foreach ($this->_whereNotIn as $condition) {
+            //Every whereNotIn has a column and an array of values for the IN part.
+
+            $condition['column'] = $this->encap($condition['column']);
+
+            $inValues = [];
+            foreach ($condition['values'] as $value) {
+                $valueId = H::getUniqueId();
+                $this->_whereParams[$valueId] = $value;
+                $inValues[] = $valueId;
+            }
+
+            $inString = implode(', :', $inValues);
+
+            if (count($inValues) > 0){
+                $strings[] = "{$condition['column']} NOT IN (:$inString)";
             }
 
         }
