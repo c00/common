@@ -606,4 +606,12 @@ class QryTest extends PHPUnit_Framework_TestCase
         $expected = "SELECT `l`.*, COUNT(`m`.`location`) AS `count`, AVG(`m`.`happiness`) AS `avg` FROM `main` AS `m` JOIN `location` AS `l` ON `l`.`id` = `m`.`locationId` GROUP BY `m`.`location`";
         $this->assertEquals($expected, $q->getSql());
     }
+
+    public function testSelectBugUndefinedIndex(){
+        $q = Qry::select(['column_alias' => 'column_name'])
+            ->from(['m' => 'main']);
+
+        $expected = "SELECT `column_name` AS `column_alias` FROM `main` AS `m`";
+        $this->assertEquals($expected, $q->getSql());
+    }
 }
