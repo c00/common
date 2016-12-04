@@ -30,33 +30,33 @@ class CovleDate implements IDatabaseProperty
         }
     }
 
-    function toMongoDate(){
+    public function toMongoDate(){
         $result = new \MongoDate(strtotime($this->dateTime->format('Y-m-d H:i:s')));
         return $result;
     }
 
-    static function fromMongoDate(\MongoDate $md){
+    public static function fromMongoDate(\MongoDate $md){
         if ($md === null) return new CovleDate();
         return CovleDate::fromString(date('Y-m-d H:i:s', $md->sec));
     }
 
-    static function newInstance(DateTime $dt = null){
+    public static function newInstance(DateTime $dt = null){
         return new CovleDate($dt);
     }
 
-    static function yesterday(){
+    public static function yesterday(){
         return CovleDate::newInstance()->addDays(-1);
     }
 
-    static function tomorrow(){
+    public static function tomorrow(){
         return CovleDate::newInstance()->addDays(1);
     }
 
-    static function now(){
+    public static function now(){
         return CovleDate::newInstance();
     }
 
-    static function fromSeconds($seconds){
+    public static function fromSeconds($seconds){
         if (!is_numeric($seconds)) $seconds = 0;
         
         $dt = new DateTime();
@@ -65,70 +65,111 @@ class CovleDate implements IDatabaseProperty
         return new CovleDate($dt);
     }
 
-    function toSeconds(){
+    public function toSeconds(){
         return $this->dateTime->getTimestamp();
     }
 
-    function toMiliseconds(){
+    public function toMiliseconds(){
         return $this->dateTime->getTimestamp() * 1000;
     }
 
-    function cloneDate(){
+    public function cloneDate(){
         return CovleDate::fromSeconds($this->toSeconds());
     }
 
-    function getStartOfDay(){
+    public function getStartOfDay(){
         return new CovleDate($this->dateTime->setTime(0,0,0));
 
     }
 
-    function isLaterThan(CovleDate $date){
+    public function getStartOfMonth(){
+        $date = $this->cloneDate()
+            ->getStartOfDay();
+
+        $date->dateTime->setDate($this->getYear(), $this->getMonth(), 1);
+        return $date;
+    }
+
+    public function getEndOfMonth(){
+        $date = $this->cloneDate()
+            ->getStartOfMonth()
+            ->addMonths(1)
+            ->addSeconds(-1);
+
+        return $date;
+    }
+
+    public function getYear(){
+        return $this->dateTime->format("Y");
+    }
+
+    public function getMonth(){
+        return $this->dateTime->format("m");
+    }
+
+    public function getDay(){
+        return $this->dateTime->format("d");
+    }
+
+    public function getHour(){
+        return $this->dateTime->format("H");
+    }
+
+    public function getMinutes(){
+        return $this->dateTime->format("i");
+    }
+
+    public function getSeconds(){
+        return $this->dateTime->format("s");
+    }
+
+    public function isLaterThan(CovleDate $date){
         return ($this->toSeconds() > $date->toSeconds());
     }
 
-    function isEarlierThan(CovleDate $date){
+    public function isEarlierThan(CovleDate $date){
         return ($this->toSeconds() < $date->toSeconds());
     }
 
-    function equals(CovleDate $date){
+    public function equals(CovleDate $date){
         return ($date->toSeconds() == $this->toSeconds());
     }
 
-    function isPast(){
+    public function isPast(){
         $today = new CovleDate();
         $todayMs = $today->toSeconds();
 
         return ($todayMs > $this->toSeconds());
     }
 
-    function isFuture(){
+    public function isFuture(){
         $today = new CovleDate();
         $todayMs = $today->toSeconds();
 
         return ($todayMs < $this->toSeconds());
     }
 
-    function toFriendlyString(){
+    public function toFriendlyString(){
         return $this->dateTime->format('F d, Y');
     }
 
-    function toString($format = 'Y-m-d H:i:s'){
+    public function toString($format = 'Y-m-d H:i:s'){
         return $this->dateTime->format($format);
     }
 
-    function toDateString(){
+    public function toDateString(){
         return $this->toW3cString();
     }
 
-    function dayOfMonth(){
+    public function dayOfMonth(){
         return $this->dateTime->format('d');
     }
 
-    function toW3cString(){
+    public function toW3cString(){
         return $this->dateTime->format('Y-m-d');
     }
 
-    static function fromMilliseconds($milliSeconds){
+    public static function fromMilliseconds($milliSeconds){
         if (!is_numeric($milliSeconds)) $milliSeconds = 0;
 
         $seconds = $milliSeconds / 1000;
@@ -141,11 +182,11 @@ class CovleDate implements IDatabaseProperty
      * @return CovleDate
      * @deprecated use FromMilliseconds() instead
      */
-    static function fromJavaScript($milliSeconds){
+    public static function fromJavaScript($milliSeconds){
         return self::fromMilliseconds($milliSeconds);
     }
 
-    static function fromMailgun($timestamp){
+    public static function fromMailgun($timestamp){
         $split = explode('.', $timestamp);
         if (count($split) == 0) return new CovleDate();
 
@@ -157,48 +198,48 @@ class CovleDate implements IDatabaseProperty
         return new CovleDate($dt);
     }
 
-    static function fromString($s, $format = "Y-m-d H:i:s"){
+    public static function fromString($s, $format = "Y-m-d H:i:s"){
         $dt = DateTime::createFromFormat($format, $s);
         return new CovleDate($dt);
     }
 
-    static function fromDateString($s){
+    public static function fromDateString($s){
         $dt = DateTime::createFromFormat("Y-m-d", $s);
         $d = new CovleDate($dt);
         return $d->getStartOfDay();
     }
 
-    function setDayOfMonth($day){
+    public function setDayOfMonth($day){
         $this->dateTime->setDate($this->dateTime->format('Y'), $this->dateTime->format('m'), $day);
         return $this;
     }
 
-    function addSeconds($seconds){
+    public function addSeconds($seconds){
         $this->dateTime->add(DateInterval::createFromDateString("$seconds Seconds"));
         return $this;
     }
 
-    function addMinutes($minutes){
+    public function addMinutes($minutes){
         $this->dateTime->add(DateInterval::createFromDateString("$minutes Minutes"));
         return $this;
     }
 
-    function addHours($hours){
+    public function addHours($hours){
         $this->dateTime->add(DateInterval::createFromDateString("$hours Hours"));
         return $this;
     }
 
-    function addDays($days){
+    public function addDays($days){
         $this->dateTime->add(DateInterval::createFromDateString("$days Days"));
         return $this;
     }
 
-    function addMonths($months){
+    public function addMonths($months){
         $this->dateTime->add(DateInterval::createFromDateString("$months Months"));
         return $this;
     }
 
-    function addYears($years){
+    public function addYears($years){
         $this->dateTime->add(DateInterval::createFromDateString("$years Years"));
         return $this;
     }

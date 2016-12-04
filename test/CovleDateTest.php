@@ -90,6 +90,58 @@ class CovleDateTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($date->equals($date3));
     }
 
+    public function testParts(){
+        $this->assertEquals("1986", $this->testDate->getYear());
+        $this->assertEquals("01", $this->testDate->getMonth());
+        $this->assertEquals("28", $this->testDate->getDay());
+
+        $this->assertEquals("13", $this->testDate->getHour());
+        $this->assertEquals("30", $this->testDate->getMinutes());
+        $this->assertEquals("00", $this->testDate->getSeconds());
+    }
+
+    public function testStartOfMonth(){
+        $beginning = $this->testDate->getStartOfMonth();
+
+        $this->assertEquals("1986", $beginning->getYear());
+        $this->assertEquals("01", $beginning->getMonth());
+        $this->assertEquals("01", $beginning->getDay());
+
+        $this->assertEquals("00", $beginning->getHour());
+        $this->assertEquals("00", $beginning->getMinutes());
+        $this->assertEquals("00", $beginning->getSeconds());
+
+    }
+
+    public function testEndOfMonth(){
+        $end = $this->testDate->getEndOfMonth();
+
+        $this->assertEquals("1986", $end->getYear());
+        $this->assertEquals("01", $end->getMonth());
+        $this->assertEquals("31", $end->getDay());
+
+        $this->assertEquals("23", $end->getHour());
+        $this->assertEquals("59", $end->getMinutes());
+        $this->assertEquals("59", $end->getSeconds());
+
+    }
+
+    public function testEndOfMonth2(){
+        //Test if leap years are done correctly.
+        //Note: This all uses PHPs internal date calculation stuff, so this should work anyway. I'm reinventing the wheel, I promise.
+        $leapMonth = CovleDate::fromString("2016-02-02 12:45:12");
+        $end = $leapMonth->getEndOfMonth();
+
+        $this->assertEquals("2016", $end->getYear());
+        $this->assertEquals("02", $end->getMonth());
+        $this->assertEquals("29", $end->getDay());
+
+        $this->assertEquals("23", $end->getHour());
+        $this->assertEquals("59", $end->getMinutes());
+        $this->assertEquals("59", $end->getSeconds());
+
+    }
+
     public function testOthers(){
         //Test adding of everything
     }
