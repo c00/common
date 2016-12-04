@@ -78,8 +78,9 @@ class CovleDate implements IDatabaseProperty
     }
 
     public function getStartOfDay(){
-        return new CovleDate($this->dateTime->setTime(0,0,0));
-
+        $date = $this->cloneDate();
+        $date->dateTime->setTime(0,0,0);
+        return $date;
     }
 
     public function getStartOfMonth(){

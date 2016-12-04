@@ -142,8 +142,26 @@ class CovleDateTest extends \PHPUnit_Framework_TestCase
 
     }
 
-    public function testOthers(){
-        //Test adding of everything
+    public function testStartOfDay(){
+        $beginning = $this->testDate->getStartOfDay();
+
+        $this->assertEquals("1986", $beginning->getYear());
+        $this->assertEquals("01", $beginning->getMonth());
+        $this->assertEquals("28", $beginning->getDay());
+
+        $this->assertEquals("00", $beginning->getHour());
+        $this->assertEquals("00", $beginning->getMinutes());
+        $this->assertEquals("00", $beginning->getSeconds());
+    }
+
+    public function testStartOfDayBug(){
+        $date = CovleDate::fromString(self::TEST_DATETIME_STRING_GMT);
+
+        $this->assertEquals(self::TEST_DATETIME_STRING_GMT, $date->toString());
+        $date2 = $date->getStartOfDay();
+
+        //This will fail, because we alter the first object...
+        $this->assertEquals(self::TEST_DATETIME_STRING_GMT, $date->toString());
     }
 
 
