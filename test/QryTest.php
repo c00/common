@@ -555,8 +555,6 @@ class QueryTest extends PHPUnit_Framework_TestCase
     }
 
     public function testGroupBy(){
-
-
         $q = Qry::select('l.*')
             ->count('m.location', 'count')
             ->avg('m.happiness', 'avg')
@@ -566,6 +564,23 @@ class QueryTest extends PHPUnit_Framework_TestCase
 
         $expected = "SELECT `l`.*, COUNT(`m`.`location`) AS `count`, AVG(`m`.`happiness`) AS `avg` FROM `main` AS `m` JOIN `location` AS `l` ON `l`.`id` = `m`.`locationId` GROUP BY `m`.`location`";
         $this->assertEquals($expected, $q->getSql());
+    }
+
+    public function testHaving(){
+        $q = Qry::select('l.*')
+            ->count('m.location', 'count')
+            ->avg('m.happiness', 'avg')
+            ->from(['m' => 'main'])
+            ->join(['l' => 'location'], 'l.id', '=', 'm.locationId')
+            ->groupBy('m.location')
+            ->having('count', '>', 10);
+
+        $params = [];
+        $sql = $q->getSql($params);
+        $id = array_keys($params)[0];
+
+        $expected = "SELECT `l`.*, COUNT(`m`.`location`) AS `count`, AVG(`m`.`happiness`) AS `avg` FROM `main` AS `m` JOIN `location` AS `l` ON `l`.`id` = `m`.`locationId` GROUP BY `m`.`location` HAVING `count` > :$id";
+        $this->assertEquals($expected, $sql);
     }
 
     public function testGroupByRanges(){

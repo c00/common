@@ -35,6 +35,8 @@ class Qry implements IQry
     private $_join = '';
     private $_orderBy = [];
     private $_groupBy = [];
+    private $_rangesParams = [];
+    private $_having = [], $_havingParams = [];
 
     private $_returnClass = '';
     
@@ -105,7 +107,7 @@ class Qry implements IQry
         $q = self::select();
         $q->_select[$ranges->alias] = $ranges->getCaseColumn();
         $q->groupBy($ranges->alias);
-        $q->_whereParams = $ranges->params;
+        $q->_rangesParams = $ranges->params;
 
         return $q;
     }
@@ -172,7 +174,7 @@ class Qry implements IQry
     public function groupBy($columns){
         if (is_string($columns)) $columns = [$columns];
         if (!is_array($columns)){
-            throw new QueryBuilderException("Group by requries a string or array");
+            throw new QueryBuilderException("Group by requires a string or array");
         }
 
         $this->_groupBy = array_merge($this->_groupBy, $columns);
@@ -180,10 +182,31 @@ class Qry implements IQry
         return $this;
     }
 
+    public function having($condition1, $operator, $condition2){
+        $condition = [
+            'condition1' => $condition1,
+            'operator' => $operator,
+            'condition2' => $condition2
+        ];
+
+        $this->_having[] = $condition;
+
+
+        return $this;
+    }
+
     public function getSql(&$params = null){
         if ($this->_type == self::TYPE_SELECT){
-            $sql = $this->getSelectString() . $this->getFromString() . $this->_join . $this->getWhereString() . $this->getGroupByString() . $this->getOrderByString() . $this->getLimit();
-            $params = $this->_whereParams;
+            $sql = $this->getSelectString() .
+                $this->getFromString() .
+                $this->_join .
+                $this->getWhereString() .
+                $this->getGroupByString() .
+                $this->getHavingString() .
+                $this->getOrderByString() .
+                $this->getLimit();
+
+            $params = array_merge($this->_whereParams, $this->_havingParams, $this->_rangesParams);
         } else if ($this->_type == self::TYPE_UPDATE){
             $sql = $this->_update . $this->getSetString() . $this->getWhereString();
             $params = array_merge($this->_updateParams, $this->_whereParams);
@@ -562,6 +585,36 @@ class Qry implements IQry
         }
 
         return " GROUP BY " . implode(', ', $strings);
+    }
+
+    private function getHavingString(){
+        if (count($this->_having) == 0) return '';
+
+        $this->_havingParams = [];
+        $strings = [];
+        foreach ($this->_having as $condition) {
+            $condition['condition1'] = QryHelper::encap($condition['condition1']);
+
+            //allow IS NULL and IS NOT NULL
+            if ($condition['condition2'] === null){
+                $strings[] = "{$condition['condition1']} {$condition['operator']} NULL";
+                continue;
+            }
+
+            //Don't escape condition 2 starting with **
+            if (!$this->shouldEscape($condition)){
+                $strings[] = "{$condition['condition1']} {$condition['operator']} {$condition['condition2']}";
+                continue;
+            }
+
+            $conditionId = H::uniqueId();
+            $this->_havingParams[$conditionId] = $condition['condition2'];
+
+            $strings[] = "{$condition['condition1']} {$condition['operator']} :$conditionId";
+        }
+
+
+        return " HAVING " . implode(' AND ', $strings);
     }
 
     private function shouldEscape(array &$condition){
