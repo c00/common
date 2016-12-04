@@ -10,6 +10,7 @@ namespace test;
 
 use c00\QueryBuilder\Qry;
 use c00\QueryBuilder\QueryBuilderException;
+use c00\QueryBuilder\Ranges;
 use c00\sample\DatabaseWithTrait;
 use c00\sample\Team;
 
@@ -137,6 +138,46 @@ class AbstractDatabaseTest extends \PHPUnit_Framework_TestCase
             ->where('code', '=', 'aapjes44');
 
         $this->db->deleteRows($q);
+    }
+
+    public function testRangesQuery(){
+        $ranges =  Ranges::newRanges('created', 'period');
+
+        $ranges->addCaseLessThan('1 early', 1473230176);
+        $ranges->addCaseBetween('2 normal', 1473230176, 1473233802);
+        $ranges->addCaseGreaterThan('3 late',1473233802);
+
+
+        $q = Qry::selectRange($ranges)
+            ->count('id', 'count')
+            ->from('answer')
+            ->orderBy('period');
+
+        $params = [];
+        $sql = $q->getSql($params);
+        $keys = array_keys($params);
+
+        //Test query
+        $expected = "SELECT CASE WHEN `created` < :{$keys[0]} THEN '1 early' WHEN `created` BETWEEN :{$keys[1]} AND :{$keys[2]} THEN '2 normal' WHEN `created` > :{$keys[3]} THEN '3 late' END AS `period`, COUNT(`id`) AS `count` FROM `answer` GROUP BY `period` ORDER BY `period` ASC";
+        $this->assertEquals($expected, $sql);
+
+        //Execute on database
+        $result = $this->db->getRows($q);
+
+        $this->assertEquals(3, count($result));
+
+        //Test row 1
+        $this->assertEquals('1 early', $result[0]['period']);
+        $this->assertEquals(7, $result[0]['count']);
+
+        //Test row 2
+        $this->assertEquals('2 normal', $result[1]['period']);
+        $this->assertEquals(40, $result[1]['count']);
+
+        //Test row 3
+        $this->assertEquals('3 late', $result[2]['period']);
+        $this->assertEquals(192, $result[2]['count']);
+
     }
 
 }

@@ -8,6 +8,7 @@
 
 use c00\QueryBuilder\Qry;
 use c00\QueryBuilder\QueryBuilderException;
+use c00\QueryBuilder\Ranges;
 
 class QueryTest extends PHPUnit_Framework_TestCase
 {
@@ -568,12 +569,23 @@ class QueryTest extends PHPUnit_Framework_TestCase
     }
 
     public function testGroupByRanges(){
-        /*Qry::select()
-            ->count('age')
-            ->from('user')
-            ->groupByRanges($ranges);
+        $ranges =  Ranges::newRanges('startTime', 'period');
 
-        $expected*/
+        $ranges->addCaseLessThan('early', 50);
+        $ranges->addCaseBetween('normal', 50, 100);
+        $ranges->addCaseGreaterThan('late',100);
+
+
+        $q = Qry::selectRange($ranges)
+            ->count('startTime', 'Count')
+            ->from('user');
+
+        $params = [];
+        $sql = $q->getSql($params);
+        $keys = array_keys($params);
+
+        $expected = "SELECT CASE WHEN `startTime` < :{$keys[0]} THEN 'early' WHEN `startTime` BETWEEN :{$keys[1]} AND :{$keys[2]} THEN 'normal' WHEN `startTime` > :{$keys[3]} THEN 'late' END AS `period`, COUNT(`startTime`) AS `Count` FROM `user` GROUP BY `period`";
+        $this->assertEquals($expected, $sql);
 
     }
 }

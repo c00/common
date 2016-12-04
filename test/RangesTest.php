@@ -8,9 +8,6 @@
 
 namespace test;
 
-
-use c00\common\CovleDate;
-use c00\QueryBuilder\Qry;
 use c00\QueryBuilder\Ranges;
 
 class RangesTest extends \PHPUnit_Framework_TestCase
@@ -23,10 +20,11 @@ class RangesTest extends \PHPUnit_Framework_TestCase
         $ranges->addCaseBetween('normal', 50, 100);
         $ranges->addCaseGreaterThan('late',100);
 
-        $ranges->getCaseColumn();
-        $expected = "CASE WHEN `startTime` < 50 THEN 'early' " .
-            "WHEN `startTime` BETWEEN 50 AND 100 THEN 'normal' " .
-            "WHEN `startTime` > 100 THEN 'late' END AS period";
+
+        $ids = array_keys($ranges->params);
+        $expected = "CASE WHEN `startTime` < :{$ids[0]} THEN 'early' " .
+            "WHEN `startTime` BETWEEN :{$ids[1]} AND :{$ids[2]} THEN 'normal' " .
+            "WHEN `startTime` > :{$ids[3]} THEN 'late' END AS period";
 
         $this->assertEquals($expected, $ranges->getCaseColumn());
 

@@ -9,11 +9,14 @@
 namespace c00\QueryBuilder;
 
 
+use c00\common\Helper;
+
 class Ranges
 {
     public $column;
     public $alias;
     public $cases = [];
+    public $params = [];
 
     public static function newRanges($groupColumn, $alias) : Ranges
     {
@@ -26,21 +29,29 @@ class Ranges
 
     public function addCaseBetween($label, $low, $high)
     {
-        //todo: escaping
-        $this->cases[] = "WHEN ". QryHelper::encap($this->column) . " BETWEEN $low AND $high THEN '$label'";
+        //todo figure out if we should escape labels
+        $lowId = Helper::uniqueId();
+        $this->params[$lowId] = $low;
+        $highId = Helper::uniqueId();
+        $this->params[$highId] = $high;
+        $this->cases[] = "WHEN ". QryHelper::encap($this->column) . " BETWEEN :$lowId AND :$highId THEN '$label'";
     }
 
     public function addCaseLessThan($label, $value) {
-        $this->cases[] = "WHEN ". QryHelper::encap($this->column) . " < $value THEN '$label'";
+        $id = Helper::uniqueId();
+        $this->params[$id] = $value;
+        $this->cases[] = "WHEN ". QryHelper::encap($this->column) . " < :$id THEN '$label'";
     }
 
     public function addCaseGreaterThan($label, $value) {
-        $this->cases[] = "WHEN ". QryHelper::encap($this->column) . " > $value THEN '$label'";
+        $id = Helper::uniqueId();
+        $this->params[$id] = $value;
+        $this->cases[] = "WHEN ". QryHelper::encap($this->column) . " > :$id THEN '$label'";
     }
 
     public function getCaseColumn() : string
     {
-        return "CASE " . implode(' ', $this->cases) . " END AS " . $this->alias;
+        return "CASE " . implode(' ', $this->cases) . " END";
     }
 
 }

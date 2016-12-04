@@ -91,7 +91,23 @@ class Qry implements IQry
         $q->_type = self::TYPE_SELECT;
         return $q;
 
-        //At the end we end up with an array that goed alias => `table`.`column` for each column.
+        //At the end we end up with an array that has: alias => `table`.`column` for each column.
+    }
+
+    /** Selects grouped ranges.
+     *
+     * Used when you need to group ranges together, such as dates.
+     *
+     * @param Ranges $ranges
+     * @return Qry
+     */
+    public static function selectRange(Ranges $ranges){
+        $q = self::select();
+        $q->_select[$ranges->alias] = $ranges->getCaseColumn();
+        $q->groupBy($ranges->alias);
+        $q->_whereParams = $ranges->params;
+
+        return $q;
     }
 
     /**
