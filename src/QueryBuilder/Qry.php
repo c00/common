@@ -8,7 +8,7 @@
 
 namespace c00\QueryBuilder;
 
-
+use c00\common\Helper as H;
 use c00\common\IDatabaseObject;
 
 class Qry implements IQry
@@ -55,7 +55,7 @@ class Qry implements IQry
         //Throw an error if it's not something I can toArray
         $q->checkDataType($object, [IDatabaseObject::class, 'array']);
 
-        $table = $q->encap($table);
+        $table = QryHelper::encap($table);
 
         $q->_insert = "INSERT INTO $table";
         $q->_object = $object;
@@ -83,7 +83,7 @@ class Qry implements IQry
 
         //encap column names.
         foreach ($columns as $alias => &$column) {
-            $column = $q->encap($column);
+            $column = QryHelper::encap($column);
         }
 
         $q->_distinct = $distinct;
@@ -106,7 +106,7 @@ class Qry implements IQry
         //Throw an error if it's not something I can `toArray`
         $q->checkDataType($object, [IDatabaseObject::class, 'array']);
 
-        $table = $q->encap($table);
+        $table = QryHelper::encap($table);
         $q->_update = "UPDATE $table";
         $q->_object = $object;
 
@@ -266,7 +266,7 @@ class Qry implements IQry
      * @return Qry
      */
     public function selectFunction($function, $column, $alias = null){
-        $column = "$function({$this->encap($column)})";
+        $column = "$function(" . QryHelper::encap($column) . ")";
 
         if ($alias){
             $this->_select[$alias] = $column;
@@ -287,7 +287,7 @@ class Qry implements IQry
         //Normalize to array
         if (is_string($tables)) $tables = [$tables];
 
-        $tables = $this->encapArray($tables);
+        $tables = QryHelper::encapArray($tables);
 
         $this->_from = array_merge($this->_from, $tables);
 
@@ -323,15 +323,15 @@ class Qry implements IQry
         if (is_array($table)){
             reset($table);
             $key = key($table);
-            if (!is_numeric($key)) $alias = " AS ". $this->encap($key);
+            if (!is_numeric($key)) $alias = " AS ". QryHelper::encap($key);
 
             //Make table to be a string.
             $table = $table[$key];
         }
 
-        $column1 = $this->encap($column1);
-        $column2 = $this->encap($column2);
-        $table = $this->encap($table);
+        $column1 = QryHelper::encap($column1);
+        $column2 = QryHelper::encap($column2);
+        $table = QryHelper::encap($table);
 
         $this->_join .= " JOIN {$table}{$alias} ON $column1 $operator $column2";
 
@@ -348,8 +348,8 @@ class Qry implements IQry
      */
     public function outerJoin($table, $column1, $operator, $column2, $direction = "LEFT"){
 
-        $column1 = $this->encap($column1);
-        $column2 = $this->encap($column2);
+        $column1 = QryHelper::encap($column1);
+        $column2 = QryHelper::encap($column2);
 
         $this->_join .= " $direction OUTER JOIN `$table` ON $column1 $operator $column2";
 
@@ -461,7 +461,7 @@ class Qry implements IQry
         } elseif (is_array($this->_object)){
             $array = $this->_object;
         } else {
-            throw new \Exception("Unsupported datatype for insert");
+            throw new \Exception("Unsupported data type for insert");
         }
 
         if (count($array) == 0){
@@ -472,7 +472,7 @@ class Qry implements IQry
         $columns = [];
         $values = [];
         foreach ($array as $key => $value) {
-            $paramId = uniqid();
+            $paramId = H::uniqueId();
             $this->_insertParams[$paramId] = $value;
 
             $columns[] = $key;
@@ -501,7 +501,7 @@ class Qry implements IQry
         $this->_updateParams = [];
         $strings = [];
         foreach ($array as $key => $value) {
-            $paramId = uniqid();
+            $paramId = H::uniqueId();
             $this->_updateParams[$paramId] = $value;
 
             $strings[] = "`{$key}` = :$paramId";
@@ -528,7 +528,7 @@ class Qry implements IQry
         foreach ($this->_orderBy as $item) {
 
 
-            $string = $this->encap($item['column']);
+            $string = QryHelper::encap($item['column']);
 
             $string .= ($item['asc']) ? " ASC" : " DESC";
             $strings[] = $string;
@@ -542,7 +542,7 @@ class Qry implements IQry
 
         $strings = [];
         foreach ($this->_groupBy as $item) {
-            $strings[] = $this->encap($item);
+            $strings[] = QryHelper::encap($item);
         }
 
         return " GROUP BY " . implode(', ', $strings);
@@ -551,7 +551,7 @@ class Qry implements IQry
     private function shouldEscape(array &$condition){
         $check = $condition['condition2'];
         if (substr($check, 0, 2) == '**'){
-            $condition['condition2'] = $this->encap(substr($check, 2));
+            $condition['condition2'] = QryHelper::encap(substr($check, 2));
             return false;
         }
 
@@ -564,7 +564,7 @@ class Qry implements IQry
         $this->_whereParams = [];
         $strings = [];
         foreach ($this->_where as $condition) {
-            $condition['condition1'] = $this->encap($condition['condition1']);
+            $condition['condition1'] = QryHelper::encap($condition['condition1']);
 
             //allow IS NULL and IS NOT NULL
             if ($condition['condition2'] === null){
@@ -578,7 +578,7 @@ class Qry implements IQry
                 continue;
             }
 
-            $conditionId = uniqid();
+            $conditionId = H::uniqueId();
             $this->_whereParams[$conditionId] = $condition['condition2'];
 
             $strings[] = "{$condition['condition1']} {$condition['operator']} :$conditionId";
@@ -587,11 +587,11 @@ class Qry implements IQry
         foreach ($this->_whereIn as $condition) {
             //Every whereIn has a column and an array of values for the IN part.
 
-            $condition['column'] = $this->encap($condition['column']);
+            $condition['column'] = QryHelper::encap($condition['column']);
 
             $inValues = [];
             foreach ($condition['values'] as $value) {
-                $valueId = uniqid();
+                $valueId = H::uniqueId();
                 $this->_whereParams[$valueId] = $value;
                 $inValues[] = $valueId;
             }
@@ -607,34 +607,5 @@ class Qry implements IQry
         return " WHERE " . implode(' AND ', $strings);
     }
 
-    /** Turns   table.column   into   `table`.`column`
-     * @param $string
-     * @return string
-     */
-    private function encap($string){
-        $string = str_replace('`', '', $string);
-
-        $parts = explode('.', $string);
-        foreach ($parts as &$part) {
-            if ($part == '*') continue;
-            $part = "`$part`";
-        }
-        $encapsulated = implode('.', $parts);
-
-        return $encapsulated;
-    }
-
-    /** Turns   table.column   into   `table`.`column`
-     * @param $array array takes an array of strings.
-     * @return array
-     */
-    private function encapArray($array){
-        foreach ($array as &$item) {
-            $item = $this->encap($item);
-        }
-
-
-        return $array;
-    }
     #endregion
 }

@@ -183,4 +183,15 @@ class Helper
 
         return $object;
     }
+
+    /** Return a random string.
+     *
+     * Uses openssl_pseudo_random_bytes, so it should be sort of crypt-safe....
+     *
+     * @param int $bytes
+     * @return string
+     */
+    public static function uniqueId($bytes = 8){
+        return bin2hex(openssl_random_pseudo_bytes($bytes));
+    }
 }

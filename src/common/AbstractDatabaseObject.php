@@ -43,12 +43,17 @@ abstract class AbstractDatabaseObject implements IDatabaseObject
     {
         $mapping = (is_array($this->_mapping)) ? $this->_mapping : [];
 
+        $internalFields = get_class_vars(self::class);
+
         $result = [];
         foreach(get_class_vars(static::class) as $key => $value){
             if((!isset($this->$key) || $this->$key === null) && !$keepNulls) {
                 //Go to the next one.
                 continue;
             }
+
+            //Filter out internal stuff.
+            if (isset($internalFields[$key])) continue;
 
             //Get mapped column name.
             $column = (isset($mapping[$key])) ? $mapping[$key] : $key;
