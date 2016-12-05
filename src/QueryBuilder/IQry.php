@@ -11,9 +11,7 @@ namespace c00\QueryBuilder;
 interface IQry {
     public function orderBy($column, $ascending = true);
     public function getSql(&$params = null);
-    public function getWhereParams();
-    public function getUpdateParams();
-    public function getInsertParams();
+    public function getParams();
     public function limit($limit, $offset = 0);
     public function asClass($className);
     public function getClass();

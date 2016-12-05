@@ -108,19 +108,19 @@ class Query implements IQry
         return $this->q->getSql($params);
     }
 
-    public function getWhereParams()
+    public function getParams()
     {
-        return $this->q->getWhereParams();
+        return $this->q->getParams();
     }
 
     public function getUpdateParams()
     {
-        return $this->q->getUpdateParams();
+        return $this->q->getParams();
     }
 
     public function getInsertParams()
     {
-        return $this->q->getInsertParams();
+        return $this->q->getParams();
     }
 
     /**

@@ -53,7 +53,7 @@ abstract class AbstractDatabase
         }
 
         $sql = $q->getSql();
-        $params = array_merge($q->getWhereParams(), $q->getUpdateParams());
+        $params = $q->getParams();
 
         $statement = $this->db->prepare($sql);
         $this->bindValues($statement, $params);
@@ -74,7 +74,7 @@ abstract class AbstractDatabase
         }
 
         $statement = $this->db->prepare($q->getSql());
-        $params = $q->getInsertParams();
+        $params = $q->getParams();
         $this->bindValues($statement, $params);
 
         if (!$statement->execute()) {
@@ -105,7 +105,7 @@ abstract class AbstractDatabase
         }
 
         $statement = $this->db->prepare($q->getSql());
-        $where = $q->getWhereParams();
+        $where = $q->getParams();
 
         if (!$statement) return false;
 
@@ -144,7 +144,7 @@ abstract class AbstractDatabase
         }
 
         $statement = $this->db->prepare($q->getSql());
-        $where = $q->getWhereParams();
+        $where = $q->getParams();
 
         if (!$statement) return false;
 

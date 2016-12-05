@@ -27,16 +27,22 @@ class Qry implements IQry
 
     private $_limit = 0, $_offset = 0, $_object;
 
-    private $_where = [], $_whereParams = [];
+    private $_where = [];
     private $_whereIn = [];
-    private $_update, $_updateParams = [];
-    private $_insert, $_insertParams = [];
+    private $_update;
+    private $_insert;
     private $_type;
     private $_join = '';
     private $_orderBy = [];
     private $_groupBy = [];
+    private $_having = [];
+
+    //Params
+    private $_whereParams = [];
+    private $_updateParams = [];
+    private $_insertParams = [];
     private $_rangesParams = [];
-    private $_having = [], $_havingParams = [];
+    private $_havingParams = [];
 
     private $_returnClass = '';
     
@@ -226,16 +232,8 @@ class Qry implements IQry
     }
 
 
-    public function getWhereParams(){
-        return $this->_whereParams;
-    }
-
-    public function getUpdateParams(){
-        return $this->_updateParams;
-    }
-
-    public function getInsertParams(){
-        return $this->_insertParams;
+    public function getParams(){
+        return array_merge($this->_whereParams, $this->_updateParams, $this->_insertParams, $this->_rangesParams, $this->_havingParams);
     }
 
     /**
