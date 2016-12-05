@@ -84,7 +84,9 @@ class Qry implements IQry
         if (is_string($columns)) $columns = [$columns];
 
 
-        if (count($columns) == 1 && $columns[0] == '*') {
+        //Yes, the isset is necessary, in case it's a assoc array.
+        if (count($columns) == 1 && isset($columns[0]) && $columns[0] == '*') {
+
             //Just empty it. We convert it into * later on if necessary.
             $columns = [];
         }
