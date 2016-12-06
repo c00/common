@@ -164,5 +164,20 @@ class CovleDateTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(self::TEST_DATETIME_STRING_GMT, $date->toString());
     }
 
+    public function testDiff(){
+        $date1 = CovleDate::fromString(self::TEST_DATETIME_STRING_GMT);
+        $date2 = $date1
+            ->cloneDate()
+            ->addDays(2)
+            ->addMonths(1)
+            ->addYears(1);
+
+        $diff = $date1->diff($date2);
+
+        $expectedDays = 2 + 31 + 365; //2 days, 1 month (january, 31 days), 1 year (365 days, no leap year)
+        $this->assertEquals($expectedDays, $diff->days);
+
+    }
+
 
 }

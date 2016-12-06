@@ -215,34 +215,78 @@ class CovleDate implements IDatabaseProperty
         return $this;
     }
 
+    /** Add seconds to the date.
+     *
+     * Adds them to the object. Returns itself for chaining. Can be negative to subtract seconds.
+     * @param $seconds int The number of days
+     * @return CovleDate
+     */
     public function addSeconds($seconds){
         $this->dateTime->add(DateInterval::createFromDateString("$seconds Seconds"));
         return $this;
     }
 
+    /** Add minutes to the date.
+     *
+     * Adds them to the object. Returns itself for chaining. Can be negative to subtract minutes.
+     * @param $minutes int The number of days
+     * @return CovleDate
+     */
     public function addMinutes($minutes){
         $this->dateTime->add(DateInterval::createFromDateString("$minutes Minutes"));
         return $this;
     }
 
+    /** Add hours to the date.
+     *
+     * Adds them to the object. Returns itself for chaining. Can be negative to subtract hours.
+     * @param $hours int The number of days
+     * @return CovleDate
+     */
     public function addHours($hours){
         $this->dateTime->add(DateInterval::createFromDateString("$hours Hours"));
         return $this;
     }
 
+    /** Add days to the date.
+     *
+     * Adds them to the object. Returns itself for chaining. Can be negative to subtract days.
+     * @param $days int The number of days
+     * @return CovleDate
+     */
     public function addDays($days){
         $this->dateTime->add(DateInterval::createFromDateString("$days Days"));
         return $this;
     }
 
+    /** Add months to the date.
+     *
+     * Adds them to the object. Returns itself for chaining. Can be negative to subtract months.
+     * @param $months int The number of days
+     * @return CovleDate
+     */
     public function addMonths($months){
         $this->dateTime->add(DateInterval::createFromDateString("$months Months"));
         return $this;
     }
 
+    /** Add years to the date.
+     *
+     * Adds them to the object. Returns itself for chaining. Can be negative to subtract years.
+     * @param $years int The number of days
+     * @return CovleDate
+     */
     public function addYears($years){
         $this->dateTime->add(DateInterval::createFromDateString("$years Years"));
         return $this;
+    }
+
+    /**
+     * @param $date CovleDate
+     * @return DateInterval
+     */
+    public function diff($date){
+        return $this->dateTime->diff($date->dateTime);
     }
 
     /** Turns a database value (column) into an object.
