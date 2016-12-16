@@ -86,6 +86,36 @@ class QueryTest extends PHPUnit_Framework_TestCase
         $this->assertSame($expected, $query->getSql());
     }
 
+    public function testSelectSum(){
+        $expected = "SELECT `email`, SUM(`id`) FROM `user`";
+
+        $query = Qry::select('email')
+            ->sum('id')
+            ->from('user');
+
+        $this->assertSame($expected, $query->getSql());
+    }
+
+    public function testSelectSum2(){
+        $expected = "SELECT SUM(`id`) FROM `user`";
+
+        $query = Qry::select()
+            ->sum('id')
+            ->from('user');
+
+        $this->assertSame($expected, $query->getSql());
+    }
+
+    public function testSelectSum3(){
+        $expected = "SELECT `challengeId`, `code`, `image`, `created`, `correct`, SUM(`created`) FROM `answer`";
+
+        $query = Qry::select(['challengeId', 'code', 'image', 'created', 'correct' ])
+            ->sum('created')
+            ->from('answer');
+
+        $this->assertSame($expected, $query->getSql());
+    }
+
     public function testSelectWhere(){
         $query = Qry::select()->from('user')->where('id', '=', 1);
 
