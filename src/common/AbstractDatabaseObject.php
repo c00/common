@@ -78,11 +78,12 @@ abstract class AbstractDatabaseObject implements IDatabaseObject
     }
 
     /** Converts the object into an array that can be passed on to a client.
-     * Use this to 'prepare' an object to go to a client. Override thid function to do any transformations.
+     * Use this to 'prepare' an object to go to a client. Override this function to do any transformations.
      * @return array
      */
     public function toShowable()
     {
+
         $array = H::objectToArray($this);
 
         return $array;

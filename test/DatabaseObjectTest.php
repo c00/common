@@ -106,4 +106,18 @@ class DatabaseObjectTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue(is_int($output['created']));
         $this->assertTrue(is_int($output['TEAMSTATUS']));
     }
+
+    public function testRemoveInternalTypes(){
+        $u = new User();
+        $u->name = "Peter";
+        $u->email = "peter@covle.com";
+
+        $a = $u->toArray();
+        $this->assertFalse(isset($a['_mapping']));
+        $this->assertFalse(isset($a['_dataTypes']));
+
+        $s = $u->toShowable();
+        $this->assertFalse(isset($s['_mapping']));
+        $this->assertFalse(isset($s['_dataTypes']));
+    }
 }
