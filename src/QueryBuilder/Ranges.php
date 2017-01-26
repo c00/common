@@ -30,21 +30,21 @@ class Ranges
     public function addCaseBetween($label, $low, $high)
     {
         //todo figure out if we should escape labels
-        $lowId = Helper::uniqueId();
+        $lowId = Helper::getUniqueId($this->params);
         $this->params[$lowId] = $low;
-        $highId = Helper::uniqueId();
+        $highId = Helper::getUniqueId($this->params);
         $this->params[$highId] = $high;
         $this->cases[] = "WHEN ". QryHelper::encap($this->column) . " BETWEEN :$lowId AND :$highId THEN '$label'";
     }
 
     public function addCaseLessThan($label, $value) {
-        $id = Helper::uniqueId();
+        $id = Helper::getUniqueId($this->params);
         $this->params[$id] = $value;
         $this->cases[] = "WHEN ". QryHelper::encap($this->column) . " < :$id THEN '$label'";
     }
 
     public function addCaseGreaterThan($label, $value) {
-        $id = Helper::uniqueId();
+        $id = Helper::getUniqueId($this->params);
         $this->params[$id] = $value;
         $this->cases[] = "WHEN ". QryHelper::encap($this->column) . " > :$id THEN '$label'";
     }

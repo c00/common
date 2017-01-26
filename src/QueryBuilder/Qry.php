@@ -235,6 +235,7 @@ class Qry implements IQry
 
 
     public function getParams(){
+        //todo: Pray all ids are unique.
         return array_merge($this->_whereParams, $this->_updateParams, $this->_insertParams, $this->_rangesParams, $this->_havingParams);
     }
 
@@ -520,7 +521,7 @@ class Qry implements IQry
         $columns = [];
         $values = [];
         foreach ($array as $key => $value) {
-            $paramId = H::uniqueId();
+            $paramId = H::getUniqueId($this->_insertParams);
             $this->_insertParams[$paramId] = $value;
 
             $columns[] = $key;
@@ -549,7 +550,7 @@ class Qry implements IQry
         $this->_updateParams = [];
         $strings = [];
         foreach ($array as $key => $value) {
-            $paramId = H::uniqueId();
+            $paramId = H::getUniqueId($this->_updateParams);
             $this->_updateParams[$paramId] = $value;
 
             $strings[] = "`{$key}` = :$paramId";
@@ -616,7 +617,7 @@ class Qry implements IQry
                 continue;
             }
 
-            $conditionId = H::uniqueId();
+            $conditionId = H::getUniqueId($this->_havingParams);
             $this->_havingParams[$conditionId] = $condition['condition2'];
 
             $strings[] = "{$condition['condition1']} {$condition['operator']} :$conditionId";
@@ -656,7 +657,7 @@ class Qry implements IQry
                 continue;
             }
 
-            $conditionId = H::uniqueId();
+            $conditionId = H::getUniqueId($this->_whereParams);
             $this->_whereParams[$conditionId] = $condition['condition2'];
 
             $strings[] = "{$condition['condition1']} {$condition['operator']} :$conditionId";
@@ -669,7 +670,7 @@ class Qry implements IQry
 
             $inValues = [];
             foreach ($condition['values'] as $value) {
-                $valueId = H::uniqueId();
+                $valueId = H::getUniqueId($this->_whereParams);
                 $this->_whereParams[$valueId] = $value;
                 $inValues[] = $valueId;
             }

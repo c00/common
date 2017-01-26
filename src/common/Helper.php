@@ -191,7 +191,30 @@ class Helper
      * @param int $bytes
      * @return string
      */
-    public static function uniqueId($bytes = 8){
+    public static function uniqueId($bytes = 25){
         return bin2hex(openssl_random_pseudo_bytes($bytes));
+    }
+
+    /** Will return an ID that does not exist in the keys of this array.
+     *
+     * @param $array array
+     * @return string Returns an id.
+     * @throws \Exception In case of infinite loop
+     */
+    public static function getUniqueId($array){
+
+        $id = self::uniqueId();
+        $i = 0;
+
+        while (isset($array[$id])){
+            //Brute force it.
+            $id = self::uniqueId();
+            $i++;
+            if ($i > 1000){
+                throw new \Exception("Something has gone really wrong trying to generate a random id.");
+            }
+        }
+
+        return $id;
     }
 }
