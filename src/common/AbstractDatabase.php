@@ -41,6 +41,21 @@ abstract class AbstractDatabase
         return true;
     }
 
+    public function getColumns($table){
+        $table = trim($table, '`');
+
+        $q = $this->db->prepare("DESCRIBE `$table`");
+        $q->execute();
+
+        return $q->fetchAll(PDO::FETCH_COLUMN);
+    }
+
+    public function hasColumn($table, $column){
+        $columns = $this->getColumns($table);
+
+        return in_array($column , $columns);
+    }
+
     public function updateRow(IQry $q)
     {
         if ($q->getType() != Qry::TYPE_UPDATE){

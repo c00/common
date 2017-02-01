@@ -59,6 +59,20 @@ class AbstractDatabaseTest extends \PHPUnit_Framework_TestCase
         $db->connect($host, $user, $pass, $dbName);
     }
 
+    public function testGetColumns(){
+        $columns = $this->db->getColumns(self::TABLE_TEAM);
+        $this->assertEquals(5, count($columns));
+    }
+
+    public function testHasColumn(){
+        $this->assertTrue($this->db->hasColumn(self::TABLE_TEAM, 'id'));
+        $this->assertTrue($this->db->hasColumn(self::TABLE_TEAM, 'code'));
+        $this->assertTrue($this->db->hasColumn(self::TABLE_TEAM, 'name'));
+
+        $this->assertFalse($this->db->hasColumn(self::TABLE_TEAM, 'ID'));
+        $this->assertFalse($this->db->hasColumn(self::TABLE_TEAM, 'Your mom'));
+    }
+
     public function testSelect1(){
         /** @var Team $team */
         $q = Qry::select()
