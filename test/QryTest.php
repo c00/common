@@ -496,6 +496,21 @@ class QueryTest extends PHPUnit_Framework_TestCase
         $this->assertSame($expected, $sql);
     }
 
+    public function testSelectOuterJoin3(){
+        $query = Qry::select()
+            ->from('user')
+            ->outerJoin(['sesh' => 'session'], 'session.userId', '=', 'user.id', "RIGHT")
+            ->where('id', '=', 1);
+
+        $params = [];
+        $sql = $query->getSql($params);
+        $key = array_keys($params)[0];
+
+        $expected = "SELECT * FROM `user` RIGHT OUTER JOIN `session` AS `sesh` ON `session`.`userId` = `user`.`id` WHERE `id` = :{$key}";
+
+        $this->assertSame($expected, $sql);
+    }
+
     public function testWhereEncapped(){
         $query = Qry::select()
             ->from('user')

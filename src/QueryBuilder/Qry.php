@@ -397,10 +397,21 @@ class Qry implements IQry
      */
     public function outerJoin($table, $column1, $operator, $column2, $direction = "LEFT"){
 
+        $alias = "";
+        if (is_array($table)){
+            reset($table);
+            $key = key($table);
+            if (!is_numeric($key)) $alias = " AS ". QryHelper::encap($key);
+
+            //Make table to be a string.
+            $table = $table[$key];
+        }
+
         $column1 = QryHelper::encap($column1);
         $column2 = QryHelper::encap($column2);
+        $table = QryHelper::encap($table);
 
-        $this->_join .= " $direction OUTER JOIN `$table` ON $column1 $operator $column2";
+        $this->_join .= " $direction OUTER JOIN {$table}{$alias} ON $column1 $operator $column2";
 
         return $this;
     }
