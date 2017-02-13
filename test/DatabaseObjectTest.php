@@ -120,4 +120,16 @@ class DatabaseObjectTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse(isset($s['_mapping']));
         $this->assertFalse(isset($s['_dataTypes']));
     }
+
+    public function testIgnoredFields(){
+        $u = new User();
+        $u->name = "Peter";
+        $u->email = "peter@covle.com";
+        $u->notADatabaseField = "penis";
+
+        $a = $u->toArray();
+        $this->assertTrue(isset($a['name']));
+        $this->assertTrue(isset($a['email']));
+        $this->assertFalse(isset($a['notADatabaseField']));
+    }
 }

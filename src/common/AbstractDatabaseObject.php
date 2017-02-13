@@ -21,6 +21,7 @@ abstract class AbstractDatabaseObject implements IDatabaseObject
     /** @var  array */
     protected $_mapping = [];
     protected $_dataTypes = [];
+    protected $_ignore = [];
 
     /** Turns an array into an instance of @static
      * @param $array array
@@ -51,6 +52,8 @@ abstract class AbstractDatabaseObject implements IDatabaseObject
                 //Go to the next one.
                 continue;
             }
+
+            if (in_array($key, $this->_ignore)) continue;
 
             //Filter out internal stuff.
             if (isset($internalFields[$key])) continue;
@@ -160,6 +163,16 @@ abstract class AbstractDatabaseObject implements IDatabaseObject
 
     private function implementsDatabaseProperty($type){
         return in_array(IDatabaseProperty::class, class_implements($type));
+    }
+
+    /** Ignore fields when converting toArray()
+     * Use this to define fields in a class that are not part of the database table.
+     * @param $array array|string
+     */
+    public function addIgnoredFields($array){
+        if (is_string($array)) $array = [$array];
+
+        $this->_ignore = array_merge($this->_ignore, $array);
     }
     //endregion
 

@@ -17,6 +17,9 @@ class User extends AbstractDatabaseObject
     public $email;
     public $active;
     public $profileImage;
+    public $notADatabaseField;
+
+    protected $_ignore = ['notADatabaseField'];
 
     public function __construct()
     {
