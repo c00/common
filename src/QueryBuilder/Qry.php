@@ -452,7 +452,7 @@ class Qry implements IQry
     }
 
     public function whereCount(){
-        return count($this->_where);
+        return count($this->_where) + count($this->_whereIn);
     }
 
 

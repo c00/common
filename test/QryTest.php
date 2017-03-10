@@ -361,15 +361,49 @@ class QueryTest extends PHPUnit_Framework_TestCase
         $codeKey = $keys[1];
         $activeKey = $keys[2];
 
+        //Test without WHERE
         $expected = "UPDATE `user` SET `name` = :$nameKey, `code` = :$codeKey, `active` = :$activeKey";
         $this->assertEquals($expected, $actual);
 
+        //Test with normal WHERE
         $q->where('code', '=', 123);
 
         $actual = $q->getSql($params);
         $keys = array_keys($params);
         $expected = "UPDATE `user` SET `name` = :{$keys[0]}, `code` = :{$keys[1]}, `active` = :$keys[2] WHERE `code` = :{$keys[3]}";
 
+        $this->assertEquals($expected, $actual);
+
+        //Two WHERES
+        $q->where('name', '=', 'barbers');
+
+        $actual = $q->getSql($params);
+        $keys = array_keys($params);
+        $expected = "UPDATE `user` SET `name` = :{$keys[0]}, `code` = :{$keys[1]}, `active` = :$keys[2] WHERE `code` = :{$keys[3]} AND `name` = :{$keys[4]}";
+
+        $this->assertEquals($expected, $actual);
+    }
+
+    public function testUpdateWhereIn(){
+        $params = [];
+        $t = new \c00\sample\Team();
+        $t->active = 1;
+        $t->code = "teamcode";
+        $t->name = "teamname";
+
+        $idArray = [2,4,6];
+
+        $q = Qry::update('user', $t)
+            ->whereIn('id', $idArray);
+
+        $actual = $q->getSql($params);
+        $keys = array_keys($params);
+        $nameKey = $keys[0];
+        $codeKey = $keys[1];
+        $activeKey = $keys[2];
+
+        //Test without WHERE
+        $expected = "UPDATE `user` SET `name` = :$nameKey, `code` = :$codeKey, `active` = :$activeKey WHERE `id` IN (:{$keys[3]}, :{$keys[4]}, :{$keys[5]})";
         $this->assertEquals($expected, $actual);
     }
 
@@ -647,5 +681,21 @@ class QueryTest extends PHPUnit_Framework_TestCase
         $expected = "SELECT CASE WHEN `startTime` < :{$keys[0]} THEN 'early' WHEN `startTime` BETWEEN :{$keys[1]} AND :{$keys[2]} THEN 'normal' WHEN `startTime` > :{$keys[3]} THEN 'late' END AS `period`, COUNT(`startTime`) AS `Count` FROM `user` GROUP BY `period`";
         $this->assertEquals($expected, $sql);
 
+    }
+
+    public function testWhereCount(){
+        $q = Qry::select()
+            ->from('user');
+
+        $this->assertEquals(0, $q->whereCount());
+
+        $q->where('id', '=', 1);
+        $this->assertEquals(1, $q->whereCount());
+
+        $q->where('name', '=', 'peter');
+        $this->assertEquals(2, $q->whereCount());
+
+        $q->whereIn('month', [1, 4, 7, 9]);
+        $this->assertEquals(3, $q->whereCount());
     }
 }
