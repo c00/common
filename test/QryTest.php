@@ -181,6 +181,32 @@ class QueryTest extends PHPUnit_Framework_TestCase
         $this->assertSame($expected, $sql);
     }
 
+    public function testSelectWhereNotIn(){
+        $query = Qry::select()->from('user')->whereNotIn('id', [1, 6, 8]);
+
+        $params = [];
+        $sql = $query->getSql($params);
+        $keys = array_keys($params);
+
+        $expected = "SELECT * FROM `user` WHERE `id` NOT IN (:{$keys[0]}, :{$keys[1]}, :{$keys[2]})";
+
+        $this->assertSame($expected, $sql);
+    }
+
+    public function testSelectWhereNotIn2(){
+        $query = Qry::select()->from('user')
+            ->whereIn('id', [2, 4, 6])
+            ->whereNotIn('id', [1, 3, 5]);
+
+        $params = [];
+        $sql = $query->getSql($params);
+        $keys = array_keys($params);
+
+        $expected = "SELECT * FROM `user` WHERE `id` IN (:{$keys[0]}, :{$keys[1]}, :{$keys[2]}) AND `id` NOT IN (:{$keys[3]}, :{$keys[4]}, :{$keys[5]})";
+
+        $this->assertSame($expected, $sql);
+    }
+
     public function testSelectDistinctWhere(){
         $query = Qry::select([], true)->from('user')->where('id', '=', 1);
 

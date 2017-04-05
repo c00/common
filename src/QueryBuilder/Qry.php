@@ -29,6 +29,7 @@ class Qry implements IQry
 
     private $_where = [];
     private $_whereIn = [];
+    private $_whereNotIn = [];
     private $_update;
     private $_insert;
     private $_type;
@@ -451,8 +452,25 @@ class Qry implements IQry
         return $this;
     }
 
+    /**
+     * @param $column
+     * @param array $values
+     * @return Qry
+     */
+    public function whereNotIn($column, array $values){
+        if (count($values) == 0) return $this;
+
+
+        $this->_whereNotIn[] = [
+            'column' => $column,
+            'values' => $values
+        ];
+
+        return $this;
+    }
+
     public function whereCount(){
-        return count($this->_where) + count($this->_whereIn);
+        return count($this->_where) + count($this->_whereIn) + count($this->_whereNotIn);
     }
 
 
@@ -649,7 +667,7 @@ class Qry implements IQry
     }
 
     private function getWhereString(){
-        if (count($this->_where) == 0 && count($this->_whereIn) == 0) return '';
+        if ($this->whereCount() == 0) return '';
 
         $this->_whereParams = [];
         $strings = [];
@@ -690,6 +708,25 @@ class Qry implements IQry
 
             if (count($inValues) > 0){
                 $strings[] = "{$condition['column']} IN (:$inString)";
+            }
+        }
+
+        foreach ($this->_whereNotIn as $condition) {
+            //Every whereNotIn has a column and an array of values for the IN part.
+
+            $condition['column'] = QryHelper::encap($condition['column']);
+
+            $inValues = [];
+            foreach ($condition['values'] as $value) {
+                $valueId = H::getUniqueId($this->_whereParams);
+                $this->_whereParams[$valueId] = $value;
+                $inValues[] = $valueId;
+            }
+
+            $inString = implode(', :', $inValues);
+
+            if (count($inValues) > 0){
+                $strings[] = "{$condition['column']} NOT IN (:$inString)";
             }
 
         }
