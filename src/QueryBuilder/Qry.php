@@ -273,50 +273,73 @@ class Qry implements IQry
         return $this->_type;
     }
 
+    //region StatisticFunctions
     /**
      * @param $column
      * @param string $alias
+     * @param $keyword string
      * @return Qry
      */
-    public function max($column, $alias = null){
-        return $this->selectFunction("MAX", $column, $alias);
+    public function max($column, $alias = null, $keyword = null){
+        return $this->selectFunction("MAX", $column, $alias, $keyword);
     }
 
     /**
      * @param $column
      * @param string $alias
+     * @param $keyword string
      * @return Qry
      */
-    public function sum($column, $alias = null){
-        return $this->selectFunction("SUM", $column, $alias);
+    public function min($column, $alias = null, $keyword = null){
+        return $this->selectFunction("MIN", $column, $alias, $keyword);
     }
 
     /**
      * @param $column
      * @param string $alias
+     * @param $keyword string
      * @return Qry
      */
-    public function count($column, $alias = null){
-        return $this->selectFunction("COUNT", $column, $alias);
+    public function sum($column, $alias = null, $keyword = null){
+        return $this->selectFunction("SUM", $column, $alias, $keyword);
     }
 
     /**
      * @param $column
      * @param string $alias
+     * @param $keyword string
      * @return Qry
      */
-    public function avg($column, $alias = null){
-        return $this->selectFunction("AVG", $column, $alias);
+    public function count($column, $alias = null, $keyword = null){
+        return $this->selectFunction("COUNT", $column, $alias, $keyword);
     }
 
     /**
-     * @param $function
      * @param $column
-     * @param null $alias
+     * @param string $alias
+     * @param $keyword string
      * @return Qry
      */
-    public function selectFunction($function, $column, $alias = null){
-        $column = "$function(" . QryHelper::encap($column) . ")";
+    public function avg($column, $alias = null, $keyword = null){
+        return $this->selectFunction("AVG", $column, $alias, $keyword);
+    }
+
+    /**
+     * @param $function string e.g. count
+     * @param $column string e.g. id
+     * @param null|string $alias e.g. wordCount
+     * @param null|string $keyword e.g. DISTINCT
+     * @return Qry
+     */
+    public function selectFunction($function, $column, $alias = null, $keyword = null){
+
+        if (!$keyword) {
+            $keyword = '';
+        } else {
+            $keyword = trim($keyword) . ' ';
+        }
+
+        $column = "$function($keyword" . QryHelper::encap($column) . ")";
 
         if ($alias){
             $this->_select[$alias] = $column;
@@ -326,6 +349,7 @@ class Qry implements IQry
 
         return $this;
     }
+    //endregion
 
     /**
      * @param $tables

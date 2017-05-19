@@ -28,7 +28,7 @@ class CovleDateTest extends \PHPUnit_Framework_TestCase
     }
 
     public function testBasics(){
-        //Test now.
+        //Test
         $date = $this->testDate;
 
         $seconds = $date->toSeconds();
@@ -38,7 +38,7 @@ class CovleDateTest extends \PHPUnit_Framework_TestCase
 
         //Check types
         $this->assertTrue(is_int($seconds));
-        $this->assertTrue(is_double($milliseconds));
+        $this->assertTrue(is_int($milliseconds));
         $this->assertTrue(is_string($dateTimeString));
         $this->assertTrue(is_string($dateString));
 

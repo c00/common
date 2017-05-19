@@ -86,6 +86,46 @@ class QueryTest extends PHPUnit_Framework_TestCase
         $this->assertSame($expected, $query->getSql());
     }
 
+    public function testSelectMin(){
+        $expected = "SELECT `email`, MIN(`id`) FROM `user`";
+
+        $query = Qry::select('email')
+            ->min('id')
+            ->from('user');
+
+        $this->assertSame($expected, $query->getSql());
+    }
+
+    public function testSelectMinWithKeyword(){
+        $expected = "SELECT `email`, MIN(DISTINCT `id`) FROM `user`";
+
+        $query = Qry::select('email')
+            ->min('id', null, 'DISTINCT')
+            ->from('user');
+
+        $this->assertSame($expected, $query->getSql());
+    }
+
+    public function testSelectMin2(){
+        $expected = "SELECT MIN(`id`) FROM `user`";
+
+        $query = Qry::select()
+            ->min('id')
+            ->from('user');
+
+        $this->assertSame($expected, $query->getSql());
+    }
+
+    public function testSelectMin3(){
+        $expected = "SELECT `challengeId`, `code`, `image`, `created`, `correct`, MIN(`created`) FROM `answer`";
+
+        $query = Qry::select(['challengeId', 'code', 'image', 'created', 'correct' ])
+            ->min('created')
+            ->from('answer');
+
+        $this->assertSame($expected, $query->getSql());
+    }
+
     public function testSelectSum(){
         $expected = "SELECT `email`, SUM(`id`) FROM `user`";
 
@@ -596,6 +636,16 @@ class QueryTest extends PHPUnit_Framework_TestCase
         $this->assertSame($expected, $query->getSql());
     }
 
+    public function testSelectFunctionWithKeyword(){
+        $query = Qry::select()
+            ->selectFunction("avg", "cost", null, 'DISTINCT')
+            ->from("product");
+
+        $expected = "SELECT avg(DISTINCT `cost`) FROM `product`";
+
+        $this->assertSame($expected, $query->getSql());
+    }
+
     public function testSelectFunctions2(){
         $query = Qry::select("user")
             ->selectFunction("avg", "cost")
@@ -615,6 +665,17 @@ class QueryTest extends PHPUnit_Framework_TestCase
 
         //Note, this is hardly valid without a GROUP BY...
         $expected = "SELECT `user`, avg(`cost`) AS `your face` FROM `product`";
+
+        $this->assertSame($expected, $query->getSql());
+    }
+
+    public function testSelectFunctionsWithAliasAndKeyword(){
+        $query = Qry::select("user")
+            ->selectFunction("avg", "cost", "your face", 'DISTINCT')
+            ->from("product");
+
+        //Note, this is hardly valid without a GROUP BY...
+        $expected = "SELECT `user`, avg(DISTINCT `cost`) AS `your face` FROM `product`";
 
         $this->assertSame($expected, $query->getSql());
     }
