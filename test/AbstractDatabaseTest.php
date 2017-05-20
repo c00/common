@@ -137,11 +137,43 @@ class AbstractDatabaseTest extends \PHPUnit_Framework_TestCase
 
     }
 
+    public function testUpdateReturnRowCount(){
+
+        $newName = 'We are the borg';
+        //Update all
+        $q1 = Qry::update(self::TABLE_TEAM, ['name' => $newName])->where('id', '>', 0);
+
+        $this->assertEquals(3, $this->db->updateRow($q1, true));
+
+        $q = Qry::select()
+            ->from(self::TABLE_TEAM)
+            ->asClass(Team::class);
+
+        /** @var Team[] $teams */
+        $teams = $this->db->getRows($q);
+
+        foreach ($teams as $team) {
+            $this->assertEquals($newName, $team->name);
+        }
+    }
+
     public function testDelete(){
         $q = Qry::delete(self::TABLE_TEAM)
             ->where('code', '=', 'aapjes44');
 
         $this->db->deleteRows($q);
+    }
+
+    public function testDeleteReturnRowCount(){
+        $q = Qry::delete(self::TABLE_TEAM)
+            ->where('code', '=', 'aapjes44');
+
+        $this->assertEquals(1, $this->db->deleteRows($q, true));
+
+        $q2 = Qry::delete(self::TABLE_TEAM)
+            ->where('id', '>', 0);
+
+        $this->assertEquals(2, $this->db->deleteRows($q2, true));
     }
 
     public function testWrongDelete(){

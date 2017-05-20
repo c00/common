@@ -56,7 +56,7 @@ abstract class AbstractDatabase
         return in_array($column , $columns);
     }
 
-    public function updateRow(IQry $q)
+    public function updateRow(IQry $q, $returnRowCount = false)
     {
         if ($q->getType() != Qry::TYPE_UPDATE){
             throw new QueryBuilderException("Wrong Query type!");
@@ -73,7 +73,13 @@ abstract class AbstractDatabase
         $statement = $this->db->prepare($sql);
         $this->bindValues($statement, $params);
 
-        return $statement->execute();
+        $result = $statement->execute();
+
+        if ($returnRowCount){
+            return $statement->rowCount();
+        } else {
+            return $result;
+        }
     }
 
     /**
@@ -152,7 +158,7 @@ abstract class AbstractDatabase
         return $result;
     }
 
-    public function deleteRows(IQry $q)
+    public function deleteRows(IQry $q, $returnRowCount = false)
     {
         if ($q->getType() != Qry::TYPE_DELETE){
             throw new QueryBuilderException("Wrong Query type!");
@@ -165,7 +171,13 @@ abstract class AbstractDatabase
 
         $this->bindWhereClause($statement, $where);
 
-        return $statement->execute();
+        $result = $statement->execute();
+
+        if ($returnRowCount){
+            return $statement->rowCount();
+        } else {
+            return $result;
+        }
     }
 
     /**
