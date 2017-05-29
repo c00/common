@@ -10,8 +10,8 @@ use c00\QueryBuilder\Qry;
 use c00\QueryBuilder\QueryBuilderException;
 use c00\QueryBuilder\Ranges;
 
-class QueryTest extends PHPUnit_Framework_TestCase
-{
+class QryTest extends PHPUnit_Framework_TestCase{
+
     public function testSelect(){
         $expected = "SELECT * FROM `user`";
 
@@ -784,5 +784,16 @@ class QueryTest extends PHPUnit_Framework_TestCase
 
         $q->whereIn('month', [1, 4, 7, 9]);
         $this->assertEquals(3, $q->whereCount());
+    }
+
+    public function testFunctionWithOperator(){
+        $query = Qry::select("id")
+            ->avg('user.end - user.start')
+            ->from("user");
+
+        //Note, this is hardly valid without a GROUP BY...
+        $expected = "SELECT `id`, AVG(`user`.`end` - `user`.`start`) FROM `user`";
+
+        $this->assertSame($expected, $query->getSql());
     }
 }

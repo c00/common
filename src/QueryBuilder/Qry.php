@@ -339,7 +339,7 @@ class Qry implements IQry
             $keyword = trim($keyword) . ' ';
         }
 
-        $column = "$function($keyword" . QryHelper::encap($column) . ")";
+        $column = "$function($keyword" . QryHelper::encapStringWithOperators($column) . ")";
 
         if ($alias){
             $this->_select[$alias] = $column;

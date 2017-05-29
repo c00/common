@@ -24,18 +24,22 @@ abstract class AbstractDatabase
 
     }
 
-    protected function connect($host, $user, $pass, $dbName)
+    protected function connect($host, $user, $pass, $dbName, $port = null, $useCompression = false)
     {
         //Already connected? Just return true.
         if ($this->connected) return true;
 
+        $dsn = "mysql:charset=utf8mb4;host=$host;dbname=$dbName";
+        if ($port) $dsn .= ";port=$port";
+
+        $options = [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_EMULATE_PREPARES => false,
+            PDO::MYSQL_ATTR_COMPRESS => $useCompression
+        ];
+
         // Setup DB connection
-        $this->db = new PDO(
-            "mysql:charset=utf8mb4;host=$host;dbname=$dbName",
-            $user,
-            $pass,
-            [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_EMULATE_PREPARES => false]
-        );
+        $this->db = new PDO($dsn, $user, $pass, $options);
 
         $this->connected = true;
         return true;

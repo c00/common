@@ -30,6 +30,25 @@ class QryHelper
         return $encapsulated;
     }
 
+    /** Turns   table.end - table.start   into   `table`.`end` - `table`.`start`
+     * @param $string string The string to encapsulate
+     * @return string
+     */
+    public static function encapStringWithOperators($string){
+        $split = explode(' ', $string);
+        $operators = ['-', '+', '*', '/'];
+
+        $resultArray = array_map(function($part) use ($operators){
+            if (in_array($part, $operators)) {
+                return $part;
+            } else {
+                return self::encap($part);
+            }
+        }, $split);
+
+        return implode(' ', $resultArray);
+    }
+
     /** Turns   table.column   into   `table`.`column`
      * @param $array array takes an array of strings.
      * @return array

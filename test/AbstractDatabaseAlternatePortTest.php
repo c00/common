@@ -14,7 +14,14 @@ use c00\QueryBuilder\Ranges;
 use c00\sample\DatabaseWithTrait;
 use c00\sample\Team;
 
-class AbstractDatabaseTest extends \PHPUnit_Framework_TestCase
+/**
+ * Class AbstractDatabaseAlternatePortTest
+ * Testing the database connection on an alternate port.
+ * Make sure you have a MYSQL/MariaDB server running on port 33061
+ *
+ * @package test
+ */
+class AbstractDatabaseAlternatePortTest extends \PHPUnit_Framework_TestCase
 {
     const TABLE_TEAM = 'team';
 
@@ -24,18 +31,19 @@ class AbstractDatabaseTest extends \PHPUnit_Framework_TestCase
     private $pdo;
 
     public function setUp(){
-        $host = "localhost";
-        $user = "root";
-        $pass = "";
+        $host = "127.0.0.1";
+        $user = "test";
+        $pass = "S45FM9hbqrXgHSTkXDYJgbxZ7q";
         $dbName = "test_common";
+        $port = 33061;
 
         //Abstract Database instance
         $this->db = new DatabaseWithTrait();
-        $this->db->connect($host, $user, $pass, $dbName);
+        $this->db->connect($host, $user, $pass, $dbName, $port);
 
         //PDO instance
         $this->pdo = new \PDO(
-            "mysql:charset=utf8mb4;host=$host;dbname=$dbName",
+            "mysql:charset=utf8mb4;host=$host;dbname=$dbName;port=$port",
             $user,
             $pass,
             [\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION, \PDO::ATTR_EMULATE_PREPARES => false]
@@ -44,23 +52,6 @@ class AbstractDatabaseTest extends \PHPUnit_Framework_TestCase
         //Run fixture. This removes all content in the database and resets to the primary set.
         $sql = file_get_contents(__DIR__ . '/sql/fixture.sql');
         $this->pdo->exec($sql);
-    }
-
-    public function testCompressedConnection(){
-        $host = "localhost";
-        $user = "root";
-        $pass = "";
-        $dbName = "test_common";
-
-        $db = new DatabaseWithTrait();
-        $db->connect($host, $user, $pass, $dbName, null, true);
-
-        $pdo = $db->getDb();
-
-        $driver = $pdo->getAttribute(\PDO::ATTR_DRIVER_NAME);
-        $this->assertTrue($pdo->getAttribute(\PDO::MYSQL_ATTR_COMPRESS));
-
-
     }
 
     public function testConnectWrongPassword(){
