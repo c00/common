@@ -456,6 +456,12 @@ class Qry implements IQry
         return $this;
     }
 
+    /**
+     * @param $condition1
+     * @param $operator
+     * @param $condition2
+     * @return Qry
+     */
     public function orWhere($condition1, $operator, $condition2){
         $condition = new Comparison($condition1, $operator, $condition2, Comparison::TYPE_OR);
 
