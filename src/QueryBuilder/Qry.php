@@ -27,6 +27,7 @@ class Qry implements IQry
 
     private $_limit = 0, $_offset = 0, $_object;
 
+    /** @var Comparison[] */
     private $_where = [];
     private $_whereIn = [];
     private $_whereNotIn = [];
@@ -448,11 +449,15 @@ class Qry implements IQry
      * @return Qry
      */
     public function where($condition1, $operator, $condition2){
-        $condition = [
-            'condition1' => $condition1,
-            'operator' => $operator,
-            'condition2' => $condition2
-        ];
+        $condition = new Comparison($condition1, $operator, $condition2);
+
+        $this->_where[] = $condition;
+
+        return $this;
+    }
+
+    public function orWhere($condition1, $operator, $condition2){
+        $condition = new Comparison($condition1, $operator, $condition2, Comparison::TYPE_OR);
 
         $this->_where[] = $condition;
 
@@ -690,31 +695,41 @@ class Qry implements IQry
         return true;
     }
 
+    private function getComparisonString(){
+        if (count($this->_where) === 0) return null;
+
+        $isFirst = true;
+        $string = "";
+        foreach ($this->_where as $comparison) {
+            if ($isFirst){
+                $isFirst = false;
+            } else if ($comparison->type === Comparison::TYPE_AND) {
+                $string .= " AND ";
+            } else if ($comparison->type === Comparison::TYPE_OR) {
+                $string .= " OR ";
+            } else {
+                throw new QueryBuilderException("No comparison type");
+            }
+
+            if ($comparison->needsUniqueId()) {
+                $comparison->uniqueId = H::getUniqueId($this->_whereParams);
+                $this->_whereParams[$comparison->uniqueId] = $comparison->condition2;
+            }
+
+            $string .= $comparison->toString();
+        }
+
+        return $string;
+    }
+
     private function getWhereString(){
         if ($this->whereCount() == 0) return '';
 
         $this->_whereParams = [];
         $strings = [];
-        foreach ($this->_where as $condition) {
-            $condition['condition1'] = QryHelper::encap($condition['condition1']);
 
-            //allow IS NULL and IS NOT NULL
-            if ($condition['condition2'] === null){
-                $strings[] = "{$condition['condition1']} {$condition['operator']} NULL";
-                continue;
-            }
-
-            //Don't escape condition 2 starting with **
-            if (!$this->shouldEscape($condition)){
-                $strings[] = "{$condition['condition1']} {$condition['operator']} {$condition['condition2']}";
-                continue;
-            }
-
-            $conditionId = H::getUniqueId($this->_whereParams);
-            $this->_whereParams[$conditionId] = $condition['condition2'];
-
-            $strings[] = "{$condition['condition1']} {$condition['operator']} :$conditionId";
-        }
+        $comparisons = $this->getComparisonString();
+        if ($comparisons) $strings[] = $comparisons;
 
         foreach ($this->_whereIn as $condition) {
             //Every whereIn has a column and an array of values for the IN part.

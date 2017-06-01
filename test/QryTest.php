@@ -796,4 +796,60 @@ class QryTest extends PHPUnit_Framework_TestCase{
 
         $this->assertSame($expected, $query->getSql());
     }
+
+    public function testOr(){
+        $params = [];
+        $sql  = Qry::select()
+            ->from('user')
+            ->where('id', '=', 1)
+            ->orWhere('email', '=', 'coo@covle.com')
+            ->getSql($params);
+
+        $keys = array_keys($params);
+        $idKey = $keys[0];
+        $emailKey = $keys[1];
+
+        $expected = "SELECT * FROM `user` WHERE `id` = :$idKey OR `email` = :$emailKey";
+
+        $this->assertSame($expected, $sql);
+    }
+
+    public function testOr2(){
+        $params = [];
+        $sql  = Qry::select()
+            ->from('user')
+            ->where('id', '=', 1)
+            ->orWhere('email', '=', 'coo@covle.com')
+            ->orWhere('email', '=', 'peter@example.com')
+            ->getSql($params);
+
+        $keys = array_keys($params);
+        $idKey = $keys[0];
+        $emailKey = $keys[1];
+        $emailKey2 = $keys[2];
+
+        $expected = "SELECT * FROM `user` WHERE `id` = :$idKey OR `email` = :$emailKey OR `email` = :$emailKey2";
+
+        $this->assertSame($expected, $sql);
+    }
+
+    public function testOr3(){
+        $params = [];
+        $sql  = Qry::select()
+            ->from('user')
+            ->where('id', '=', 1)
+            ->orWhere('email', '=', 'coo@covle.com')
+            ->where('age', 'IS', null)
+            ->orWhere('email', '=', 'peter@example.com')
+            ->getSql($params);
+
+        $keys = array_keys($params);
+        $idKey = $keys[0];
+        $emailKey = $keys[1];
+        $emailKey2 = $keys[2];
+
+        $expected = "SELECT * FROM `user` WHERE `id` = :$idKey OR `email` = :$emailKey AND `age` IS NULL OR `email` = :$emailKey2";
+
+        $this->assertSame($expected, $sql);
+    }
 }
