@@ -9,6 +9,7 @@
 use c00\QueryBuilder\Qry;
 use c00\QueryBuilder\QueryBuilderException;
 use c00\QueryBuilder\Ranges;
+use c00\QueryBuilder\WhereGroup;
 
 class QryTest extends PHPUnit_Framework_TestCase{
 
@@ -849,6 +850,70 @@ class QryTest extends PHPUnit_Framework_TestCase{
         $emailKey2 = $keys[2];
 
         $expected = "SELECT * FROM `user` WHERE `id` = :$idKey OR `email` = :$emailKey AND `age` IS NULL OR `email` = :$emailKey2";
+
+        $this->assertSame($expected, $sql);
+    }
+
+    public function testWhereGroup(){
+        $params = [];
+        $sql  = Qry::select()
+            ->from('user')
+            ->whereGroup(
+                WhereGroup::new('id', '=', 1)
+                    ->where('email', 'IS', null))
+            ->orWhereGroup(
+                WhereGroup::new('id', '!=', 1)
+                    ->where('email', '=', 'coo@covle.com'))
+            ->getSql($params);
+
+        $keys = array_keys($params);
+        $idKey = $keys[0];
+        $idKey2 = $keys[1];
+        $emailKey = $keys[2];
+        $expected = "SELECT * FROM `user` WHERE (`id` = :$idKey AND `email` IS NULL) OR (`id` != :$idKey2 AND `email` = :$emailKey)";
+
+        $this->assertSame($expected, $sql);
+    }
+
+    public function testWhereGroup2(){
+        $params = [];
+        $sql  = Qry::select()
+            ->from('user')
+            ->whereGroup(
+                WhereGroup::new('id', '=', 1)
+                    ->orWhere('email', 'IS', null))
+            ->whereGroup(
+                WhereGroup::new('id', '!=', 1)
+                    ->where('email', '=', 'coo@covle.com'))
+            ->getSql($params);
+
+        $keys = array_keys($params);
+        $idKey = $keys[0];
+        $idKey2 = $keys[1];
+        $emailKey = $keys[2];
+        $expected = "SELECT * FROM `user` WHERE (`id` = :$idKey OR `email` IS NULL) AND (`id` != :$idKey2 AND `email` = :$emailKey)";
+
+        $this->assertSame($expected, $sql);
+    }
+
+    public function testWhereGroup3(){
+        $params = [];
+        $sql  = Qry::select()
+            ->from('user')
+            ->where('date', '=', null)
+            ->whereGroup(
+                WhereGroup::new('id', '=', 1)
+                    ->where('email', 'IS', null))
+            ->orWhereGroup(
+                WhereGroup::new('id', '!=', 1)
+                    ->where('email', '=', 'coo@covle.com'))
+            ->getSql($params);
+
+        $keys = array_keys($params);
+        $idKey = $keys[0];
+        $idKey2 = $keys[1];
+        $emailKey = $keys[2];
+        $expected = "SELECT * FROM `user` WHERE `date` IS NULL AND (`id` = :$idKey AND `email` IS NULL) OR (`id` != :$idKey2 AND `email` = :$emailKey)";
 
         $this->assertSame($expected, $sql);
     }

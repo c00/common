@@ -65,6 +65,6 @@ class Comparison
 
     public function needsUniqueId(){
         return ($this->shouldEscape && $this->condition2 !== null);
-
     }
+
 }

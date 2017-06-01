@@ -31,6 +31,8 @@ class Qry implements IQry
     private $_where = [];
     private $_whereIn = [];
     private $_whereNotIn = [];
+    /** @var WhereGroup[] */
+    private $_whereGroups = [];
     private $_update;
     private $_insert;
     private $_type;
@@ -504,8 +506,30 @@ class Qry implements IQry
         return $this;
     }
 
+    /**
+     * @param $group WhereGroup
+     * @return Qry
+     */
+    public function whereGroup($group){
+        $this->_whereGroups[] = $group;
+        return $this;
+    }
+
+    /**
+     * @param $group WhereGroup
+     * @return Qry
+     */
+    public function orWhereGroup($group){
+        $group->type = Comparison::TYPE_OR;
+        $this->_whereGroups[] = $group;
+        return $this;
+    }
+
     public function whereCount(){
-        return count($this->_where) + count($this->_whereIn) + count($this->_whereNotIn);
+        return count($this->_where) +
+            count($this->_whereIn) +
+            count($this->_whereNotIn) +
+            count($this->_whereGroups);
     }
 
 
@@ -728,6 +752,30 @@ class Qry implements IQry
         return $string;
     }
 
+    private function getWhereGroupsString(){
+        if (count($this->_whereGroups) === 0) return null;
+
+        $isFirst = true;
+        $string = "";
+        foreach ($this->_whereGroups as $group) {
+            if ($isFirst){
+                $isFirst = false;
+            } else if ($group->type === Comparison::TYPE_AND) {
+                $string .= " AND ";
+            } else if ($group->type === Comparison::TYPE_OR) {
+                $string .= " OR ";
+            } else {
+                throw new QueryBuilderException("No comparison type");
+            }
+
+            $group->setUniqueIds($this->_whereParams);
+
+            $string .= $group->toString();
+        }
+
+        return $string;
+    }
+
     private function getWhereString(){
         if ($this->whereCount() == 0) return '';
 
@@ -736,6 +784,9 @@ class Qry implements IQry
 
         $comparisons = $this->getComparisonString();
         if ($comparisons) $strings[] = $comparisons;
+
+        $whereGroups = $this->getWhereGroupsString();
+        if ($whereGroups) $strings[] = $whereGroups;
 
         foreach ($this->_whereIn as $condition) {
             //Every whereIn has a column and an array of values for the IN part.
