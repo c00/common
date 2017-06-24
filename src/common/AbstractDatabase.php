@@ -16,6 +16,7 @@ abstract class AbstractDatabase
     /** @var PDO */
     protected $db;
     protected $connected;
+    private $dbName;
 
     const NO_RECORD_FOUND = 1000;
 
@@ -40,6 +41,7 @@ abstract class AbstractDatabase
 
         // Setup DB connection
         $this->db = new PDO($dsn, $user, $pass, $options);
+        $this->dbName = $dbName;
 
         $this->connected = true;
         return true;
@@ -52,6 +54,15 @@ abstract class AbstractDatabase
         $q->execute();
 
         return $q->fetchAll(PDO::FETCH_COLUMN);
+    }
+
+    public function hasTable($table){
+        $q = Qry::select('table_name')
+            ->from('information_schema.tables')
+            ->where('table_schema', '=', $this->dbName)
+            ->where('table_name', '=', $table);
+
+        return $this->rowExists($q);
     }
 
     public function hasColumn($table, $column){

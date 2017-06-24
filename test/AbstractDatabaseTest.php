@@ -243,4 +243,9 @@ class AbstractDatabaseTest extends \PHPUnit_Framework_TestCase
 
     }
 
+    public function testHasTable(){
+        $this->assertTrue($this->db->hasTable("user"));
+        $this->assertFalse($this->db->hasTable("foo"));
+    }
+
 }
