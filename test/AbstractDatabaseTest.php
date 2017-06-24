@@ -248,4 +248,38 @@ class AbstractDatabaseTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse($this->db->hasTable("foo"));
     }
 
+    public function testHasTables(){
+        $goodTables = ['team', 'session', 'user'];
+        $badTables1 = ['team', 'session', 'foo'];
+        $badTables2 = ['team', 'session', 'user', 'foo'];
+        $badTables3 = [];
+
+
+        $this->assertTrue($this->db->hasTables($goodTables));
+        $this->assertfalse($this->db->hasTables($badTables1));
+        $this->assertfalse($this->db->hasTables($badTables2));
+        $this->assertfalse($this->db->hasTables($badTables3));
+
+    }
+
+    public function testGetValue(){
+        $q = Qry::select('name')
+            ->from(self::TABLE_TEAM)
+            ->where('code', '=', 'aapjes44');
+
+        $value = $this->db->getValue($q);
+
+        $this->assertEquals('The Dudemeisters', $value);
+    }
+
+    public function testGetValue2(){
+        $q = Qry::select()
+            ->count('id')
+            ->from(self::TABLE_TEAM);
+
+        $value = $this->db->getValue($q);
+
+        $this->assertEquals(3, $value);
+    }
+
 }

@@ -56,6 +56,22 @@ abstract class AbstractDatabase
         return $q->fetchAll(PDO::FETCH_COLUMN);
     }
 
+    /**
+     * Gets the value of the first column of the first row.
+     *
+     * @param Qry $q The query to execute
+     * @return mixed
+     * @throws \Exception When there's no result
+     */
+    public function getValue(Qry $q){
+        $row = $this->getRow($q);
+        foreach ($row as $item) {
+            return $item;
+        }
+
+        throw new \Exception("No value to return");
+    }
+
     public function hasTable($table){
         $q = Qry::select('table_name')
             ->from('information_schema.tables')
@@ -63,6 +79,18 @@ abstract class AbstractDatabase
             ->where('table_name', '=', $table);
 
         return $this->rowExists($q);
+    }
+
+    public function hasTables($tables){
+        $q = Qry::select()
+            ->count('table_name')
+            ->from('information_schema.tables')
+            ->where('table_schema', '=', $this->dbName)
+            ->whereIn('table_name', $tables);
+
+
+        //Return true if the number returned is the same as the number of tables.
+        return ($this->getValue($q) == count($tables));
     }
 
     public function hasColumn($table, $column){
