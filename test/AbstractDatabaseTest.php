@@ -13,6 +13,7 @@ use c00\QueryBuilder\QueryBuilderException;
 use c00\QueryBuilder\Ranges;
 use c00\sample\DatabaseWithTrait;
 use c00\sample\Team;
+use Prophecy\Exception\Exception;
 
 class AbstractDatabaseTest extends \PHPUnit_Framework_TestCase
 {
@@ -55,9 +56,9 @@ class AbstractDatabaseTest extends \PHPUnit_Framework_TestCase
         $db = new DatabaseWithTrait();
         $db->connect($host, $user, $pass, $dbName, null, true);
 
-        $pdo = $db->getDb();
+        //$pdo = $db->getDb();
 
-        $driver = $pdo->getAttribute(\PDO::ATTR_DRIVER_NAME);
+        //$driver = $pdo->getAttribute(\PDO::ATTR_DRIVER_NAME);
         //$this->assertTrue($pdo->getAttribute(\PDO::MYSQL_ATTR_COMPRESS));
 
 
@@ -68,7 +69,7 @@ class AbstractDatabaseTest extends \PHPUnit_Framework_TestCase
 
         $host = "localhost";
         $user = "root";
-        $pass = "Nothtepassword";
+        $pass = "Notthepassword";
         $dbName = "test_common";
 
         //Abstract Database instance
@@ -101,6 +102,8 @@ class AbstractDatabaseTest extends \PHPUnit_Framework_TestCase
 
         $this->assertTrue($team instanceof Team);
         $this->assertEquals('The Dudemeisters', $team->name);
+
+        $this->assertEquals(1, $this->db->stats['select']);
     }
 
     public function testSelectAll(){
@@ -151,6 +154,10 @@ class AbstractDatabaseTest extends \PHPUnit_Framework_TestCase
         $team2 = $this->db->getRow($q);
         $this->assertEquals($team->name, $team2->name);
         $this->assertEquals($team->name, "Supreme donkey of the trouser pods");
+
+
+        $this->assertEquals(2, $this->db->stats['select']);
+        $this->assertEquals(1, $this->db->stats['update']);
 
     }
 
@@ -282,4 +289,97 @@ class AbstractDatabaseTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(3, $value);
     }
 
+    public function testTransactionCommit(){
+        $this->db->beginTransaction();
+
+        $team = new Team();
+        $team->name = "Testers";
+        $team->active = true;
+        $team->code = "test123";
+
+        $id = $this->db->insertRow(Qry::insert(self::TABLE_TEAM, $team));
+
+        $this->assertEquals(4, $id);
+
+        $teamBeforeCommit = $this->db->getRow(Qry::select()->from(self::TABLE_TEAM)->where('id', '=', $id)->asClass(Team::class));
+        $this->assertEquals($team->name, $teamBeforeCommit->name);
+
+        $this->db->commitTransaction();
+
+        $this->assertEquals(1, $this->db->stats['transactions']);
+
+        $teamFromDb = $this->db->getRow(Qry::select()->from(self::TABLE_TEAM)->where('id', '=', $id)->asClass(Team::class));
+        $this->assertEquals($team->name, $teamFromDb->name);
+    }
+
+    public function testTransactionRollback(){
+        $this->db->beginTransaction();
+
+        $team = new Team();
+        $team->name = "Testers";
+        $team->active = true;
+        $team->code = "test123";
+
+        $id = $this->db->insertRow(Qry::insert(self::TABLE_TEAM, $team));
+
+        $this->assertEquals(4, $id);
+
+        $teamBeforeCommit = $this->db->getRow(Qry::select()->from(self::TABLE_TEAM)->where('id', '=', $id)->asClass(Team::class));
+        $this->assertEquals($team->name, $teamBeforeCommit->name);
+
+        $this->db->rollBackTransaction();
+
+        $this->assertEquals(1, $this->db->stats['transactions']);
+
+        $this->expectException(\Exception::class);
+        $this->db->getRow(Qry::select()->from(self::TABLE_TEAM)->where('id', '=', $id)->asClass(Team::class));
+    }
+
+
+    public function testDebug1(){
+        $this->db->debug = true;
+
+        $q = Qry::delete(self::TABLE_TEAM)
+            ->where('code', '=', 'aapjes44');
+        $this->db->deleteRows($q);
+
+        $q2 = Qry::delete(self::TABLE_TEAM)
+            ->where('id', '>', 0);
+        $this->db->deleteRows($q2);
+
+
+        $qryInfo = $this->db->qryInfo;
+
+        $this->assertEquals(2, count($qryInfo));
+
+        $this->assertEquals("DELETE FROM `team` WHERE `code` = 'aapjes44'", $qryInfo[0]->sql);
+        $this->assertEquals("DELETE FROM `team` WHERE `id` > 0", $qryInfo[1]->sql);
+        $this->assertEquals(0, $this->db->stats[Qry::TYPE_SELECT]);
+        $this->assertEquals(0, $this->db->stats[Qry::TYPE_INSERT]);
+        $this->assertEquals(0, $this->db->stats[Qry::TYPE_UPDATE]);
+        $this->assertEquals(2, $this->db->stats[Qry::TYPE_DELETE]);
+        $this->assertEquals(0, $this->db->stats['other']);
+        $this->assertEquals(0, $this->db->stats['transactions']);
+    }
+
+    public function testDebug2(){
+        $q = Qry::delete(self::TABLE_TEAM)
+            ->where('code', '=', 'aapjes44');
+        $this->db->deleteRows($q);
+
+        $q2 = Qry::delete(self::TABLE_TEAM)
+            ->where('id', '>', 0);
+        $this->db->deleteRows($q2);
+
+
+        $qryInfo = $this->db->qryInfo;
+
+        $this->assertEquals(0, count($qryInfo));
+        $this->assertEquals(0, $this->db->stats[Qry::TYPE_SELECT]);
+        $this->assertEquals(0, $this->db->stats[Qry::TYPE_INSERT]);
+        $this->assertEquals(0, $this->db->stats[Qry::TYPE_UPDATE]);
+        $this->assertEquals(2, $this->db->stats[Qry::TYPE_DELETE]);
+        $this->assertEquals(0, $this->db->stats['other']);
+        $this->assertEquals(0, $this->db->stats['transactions']);
+    }
 }

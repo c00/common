@@ -2,6 +2,7 @@
 
 namespace c00\common;
 
+use c00\QueryBuilder\DebugInfo;
 use c00\QueryBuilder\Qry;
 use c00\QueryBuilder\QueryBuilderException;
 use \PDO;
@@ -17,6 +18,22 @@ abstract class AbstractDatabase
     protected $db;
     protected $connected;
     private $dbName;
+
+    private $hasOpenTransaction = false;
+    public $debug = false;
+    public $stats = [
+        Qry::TYPE_INSERT => 0,
+        Qry::TYPE_SELECT => 0,
+        Qry::TYPE_UPDATE => 0,
+        Qry::TYPE_DELETE => 0,
+        'other' => 0,
+        'transactions' => 0
+    ];
+
+    /** @var DebugInfo[] */
+    public $qryInfo = [];
+    /** @var  DebugInfo */
+    private $currentDebugInfo;
 
     const NO_RECORD_FOUND = 1000;
 
@@ -47,11 +64,45 @@ abstract class AbstractDatabase
         return true;
     }
 
+    private function logQueryStart($type){
+        $this->stats[$type]++;
+
+        if (!$this->debug) return;
+
+        $this->currentDebugInfo = DebugInfo::start();
+    }
+
+    private function logQueryEnd($q){
+        if (!$this->debug || !$this->currentDebugInfo || get_class($q) != Qry::class) return;
+
+        $this->currentDebugInfo->finish($q);
+        $this->qryInfo[] = $this->currentDebugInfo;
+        $this->currentDebugInfo = null;
+    }
+
+    public function beginTransaction(){
+        $this->hasOpenTransaction = true;
+        $this->stats['transactions']++;
+        $this->db->beginTransaction();
+    }
+
+    public function commitTransaction(){
+        $this->hasOpenTransaction = false;
+        $this->db->commit();
+    }
+
+    public function rollBackTransaction(){
+        $this->hasOpenTransaction = false;
+        $this->db->rollBack();
+    }
+
     public function getColumns($table){
         $table = trim($table, '`');
 
         $q = $this->db->prepare("DESCRIBE `$table`");
         $q->execute();
+
+        $this->stats['other']++;
 
         return $q->fetchAll(PDO::FETCH_COLUMN);
     }
@@ -88,7 +139,6 @@ abstract class AbstractDatabase
             ->where('table_schema', '=', $this->dbName)
             ->whereIn('table_name', $tables);
 
-
         //Return true if the number returned is the same as the number of tables.
         return ($this->getValue($q) == count($tables));
     }
@@ -116,7 +166,9 @@ abstract class AbstractDatabase
         $statement = $this->db->prepare($sql);
         $this->bindValues($statement, $params);
 
+        $this->logQueryStart(Qry::TYPE_UPDATE);
         $result = $statement->execute();
+        $this->logQueryEnd($q);
 
         if ($returnRowCount){
             return $statement->rowCount();
@@ -141,9 +193,11 @@ abstract class AbstractDatabase
         $params = $q->getParams();
         $this->bindValues($statement, $params);
 
+        $this->logQueryStart($q->getType());
         if (!$statement->execute()) {
             throw new \Exception("Couldn't insert row.");
         }
+        $this->logQueryEnd($q);
 
         return ($noId) ? true : $this->db->lastInsertId();
     }
@@ -159,6 +213,7 @@ abstract class AbstractDatabase
         if (!isset($result[0])) {
             throw new \Exception("No record found", self::NO_RECORD_FOUND);
         }
+
         return $result[0];
     }
     
@@ -175,7 +230,9 @@ abstract class AbstractDatabase
 
         $this->bindWhereClause($statement, $where);
 
+        $this->logQueryStart($q->getType());
         $statement->execute();
+        $this->logQueryEnd($q);
 
         $records = $statement->fetchAll(PDO::FETCH_ASSOC);
         
@@ -214,7 +271,9 @@ abstract class AbstractDatabase
 
         $this->bindWhereClause($statement, $where);
 
+        $this->logQueryStart($q->getType());
         $result = $statement->execute();
+        $this->logQueryEnd($q);
 
         if ($returnRowCount){
             return $statement->rowCount();
