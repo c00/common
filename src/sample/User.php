@@ -26,4 +26,13 @@ class User extends AbstractDatabaseObject
 
     }
 
+    public static function newInstance($name, $email)
+    {
+        $user = new User();
+        $user->name = $name;
+        $user->email = $email;
+
+        return $user;
+    }
+
 }

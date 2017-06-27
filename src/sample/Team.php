@@ -26,6 +26,16 @@ class Team extends AbstractDatabaseObject
 
     }
 
+    public static function newInstance($name, $code, $image)
+    {
+        $team = new Team();
+        $team->name = $name;
+        $team->code = $code;
+        $team->image = $image;
+
+        return $team;
+    }
+
     /**
      * @param $array
      * @return bool|Team
@@ -35,8 +45,8 @@ class Team extends AbstractDatabaseObject
         /** @var Team $t */
         $t = H::objectFromArray($array, self::class);
 
-        $t->id = (int) $array['id'];
-        $t->active = (bool) $array['active'];
+        $t->id = (int) isset($array['id']) ? $array['id'] : null;
+        $t->active = (bool) isset($array['active']) ? $array['active'] : null;
 
         return $t;
     }
