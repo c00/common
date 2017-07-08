@@ -535,6 +535,20 @@ class QryTest extends PHPUnit_Framework_TestCase{
         $this->assertSame($expected, $sql);
     }
 
+    public function testDeleteWhereIn(){
+        $query = Qry::delete()
+            ->from('user')
+            ->whereIn('id', [1, 2, 4]);
+
+        $params = [];
+        $sql = $query->getSql($params);
+        $keys = array_keys($params);
+
+        $expected = "DELETE FROM `user` WHERE `id` IN (:{$keys[0]}, :{$keys[1]}, :{$keys[2]})";
+
+        $this->assertSame($expected, $sql);
+    }
+
     public function testSelectJoin(){
         $query = Qry::select()
             ->from('user')
