@@ -289,6 +289,22 @@ class AbstractDatabaseTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(3, $value);
     }
 
+    public function testGetValues(){
+        $q = Qry::select('name')
+            ->from(self::TABLE_TEAM);
+
+        $values = $this->db->getValues($q);
+
+        $expected = [
+            'The Dudemeisters',
+            'The Chimpmunks',
+            'Crazy Horses'
+        ];
+
+
+        $this->assertEquals($expected, $values);
+    }
+
     public function testTransactionCommit(){
         $this->db->beginTransaction();
 

@@ -123,6 +123,28 @@ abstract class AbstractDatabase
         throw new \Exception("No value to return");
     }
 
+    /**
+     * Gets the values of the first column of each row.
+     *
+     * @param Qry $q The query to execute
+     * @return array
+     */
+    public function getValues(Qry $q){
+        $rows = $this->getRows($q);
+
+        $values = [];
+
+        foreach ($rows as $row) {
+
+            foreach ($row as $value) {
+                $values[] = $value;
+                break;
+            }
+        }
+
+        return $values;
+    }
+
     public function hasTable($table){
         $q = Qry::select('table_name')
             ->from('information_schema.tables')
