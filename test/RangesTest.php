@@ -24,7 +24,7 @@ class RangesTest extends \PHPUnit_Framework_TestCase
         $ids = array_keys($ranges->params);
         $expected = "CASE WHEN `startTime` < :{$ids[0]} THEN 'early' " .
             "WHEN `startTime` BETWEEN :{$ids[1]} AND :{$ids[2]} THEN 'normal' " .
-            "WHEN `startTime` > :{$ids[3]} THEN 'late' END AS period";
+            "WHEN `startTime` > :{$ids[3]} THEN 'late' END";
 
         $this->assertEquals($expected, $ranges->getCaseColumn());
 

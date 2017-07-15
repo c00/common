@@ -521,6 +521,15 @@ class QryTest extends PHPUnit_Framework_TestCase{
         $this->assertSame($expected, $query->getSql());
     }
 
+    public function testDelete3(){
+        $expected = "DELETE FROM `user`";
+
+        $query = Qry::delete('user');
+
+        $this->assertSame($expected, $query->getSql());
+    }
+
+
     public function testDeleteWhere(){
         $query = Qry::delete()
             ->from('user')
@@ -549,6 +558,62 @@ class QryTest extends PHPUnit_Framework_TestCase{
         $this->assertSame($expected, $sql);
     }
 
+    public function testDeleteJoin(){
+        $query = Qry::delete()
+            ->from('user')
+            ->join('session', 'session.userId', '=', 'user.id')
+            ->where('id', '=', 1);
+
+        $params = [];
+        $sql = $query->getSql($params);
+        $key = array_keys($params)[0];
+        $expected = "DELETE `user` FROM `user` JOIN `session` ON `session`.`userId` = `user`.`id` WHERE `id` = :{$key}";
+
+        $this->assertSame($expected, $sql);
+    }
+
+    public function testDeleteJoin2(){
+        $query = Qry::delete()
+            ->from(['user', 'session'])
+            ->join('session', 'session.userId', '=', 'user.id')
+            ->where('id', '=', 1);
+
+        $params = [];
+        $sql = $query->getSql($params);
+        $key = array_keys($params)[0];
+        $expected = "DELETE `user`, `session` FROM `user`, `session` JOIN `session` ON `session`.`userId` = `user`.`id` WHERE `id` = :{$key}";
+
+        $this->assertSame($expected, $sql);
+    }
+
+    public function testDeleteJoin3(){
+        $query = Qry::delete()
+            ->from(['u' => 'user', 's' => 'session'])
+            ->join('session', 'session.userId', '=', 'user.id')
+            ->where('id', '=', 1);
+
+        $params = [];
+        $sql = $query->getSql($params);
+        $key = array_keys($params)[0];
+        $expected = "DELETE `u`, `s` FROM `user` AS `u`, `session` AS `s` JOIN `session` ON `session`.`userId` = `user`.`id` WHERE `id` = :{$key}";
+
+        $this->assertSame($expected, $sql);
+    }
+
+    public function testDeleteJoin4(){
+        $query = Qry::delete()
+            ->from(['u' => 'user'])
+            ->join('session', 'session.userId', '=', 'user.id')
+            ->where('id', '=', 1);
+
+        $params = [];
+        $sql = $query->getSql($params);
+        $key = array_keys($params)[0];
+        $expected = "DELETE `u` FROM `user` AS `u` JOIN `session` ON `session`.`userId` = `user`.`id` WHERE `id` = :{$key}";
+
+        $this->assertSame($expected, $sql);
+    }
+
     public function testSelectJoin(){
         $query = Qry::select()
             ->from('user')
@@ -563,6 +628,8 @@ class QryTest extends PHPUnit_Framework_TestCase{
 
         $this->assertSame($expected, $sql);
     }
+
+
 
     public function testSelectJoin2(){
         $query = Qry::select()

@@ -218,21 +218,40 @@ class Qry implements IQry
                 $this->getOrderByString() .
                 $this->getLimit();
 
-            $params = array_merge($this->_whereParams, $this->_havingParams, $this->_rangesParams);
         } else if ($this->_type == self::TYPE_UPDATE){
             $sql = $this->_update . $this->getSetString() . $this->getWhereString();
-            $params = array_merge($this->_updateParams, $this->_whereParams);
         } else if ($this->_type == self::TYPE_INSERT){
             $sql = $this->_insert . $this->getInsertString();
-            $params = array_merge($this->_insertParams, $this->_whereParams);
         } else if ($this->_type == self::TYPE_DELETE){
-            $sql = "DELETE" . $this->getFromString() . $this->getWhereString();
-            $params = array_merge($this->_insertParams, $this->_whereParams);
+            $sql = $this->buildDeleteSql();
         } else {
             throw new QueryBuilderException("Not implemented");
         }
 
+        $params = $this->getParams();
+
         $this->sql = $sql;
+
+        return $sql;
+    }
+
+    private function buildDeleteSql(){
+        //If there's a join, we need some stuff at the beginning.
+        $tableString = '';
+        if ($this->_join) {
+            $tables = [];
+            foreach ($this->_from as $alias => $table) {
+                if (!is_numeric($alias)) {
+                    $tables[] = QryHelper::encap($alias);
+                } else {
+                    $tables[] = $table;
+                }
+            }
+
+            $tableString = ' ' . implode(', ', $tables);
+        }
+
+        $sql = "DELETE" . $tableString . $this->getFromString() . $this->_join . $this->getWhereString();
 
         return $sql;
     }
@@ -240,7 +259,7 @@ class Qry implements IQry
 
     public function getParams(){
         //todo: Pray all ids are unique.
-        return array_merge($this->_whereParams, $this->_updateParams, $this->_insertParams, $this->_rangesParams, $this->_havingParams);
+        return array_merge($this->_updateParams, $this->_insertParams, $this->_whereParams, $this->_rangesParams, $this->_havingParams);
     }
 
     /**

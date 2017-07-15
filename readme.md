@@ -73,9 +73,12 @@ Docs coming soon...
 #Todo:
 - Bump to version 1.0
 - Add a bunch of docs and samples.
+- Use polymorphism for Qry. Make Qry abstract, and make select, update, insert and delete extend it.
+- Retire old Query class
+
 
 ## QueryBuilder
 - Add `->and` and `->or` support for where clauses and Join clauses
 
 #License - MIT
-So whatever you want with it. 
+So do whatever you want with it.
