@@ -46,7 +46,8 @@ class Team extends AbstractDatabaseObject
         $t = H::objectFromArray($array, self::class);
 
         $t->id = (int) isset($array['id']) ? $array['id'] : null;
-        $t->active = (bool) isset($array['active']) ? $array['active'] : null;
+        //$t->active = (bool) isset($array['active']) ? $array['active'] : null;
+        if (isset($array['active'])) $t->active = (bool) $array['active'];
 
         return $t;
     }
