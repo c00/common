@@ -10,6 +10,10 @@ namespace c00\QueryBuilder;
 
 use c00\common\Helper as H;
 use c00\common\IDatabaseObject;
+use c00\QueryBuilder\components\Comparison;
+use c00\QueryBuilder\components\WhereGroup;
+use c00\QueryBuilder\components\WhereIn;
+use c00\QueryBuilder\components\Where;
 
 class Qry implements IQry
 {
@@ -27,12 +31,9 @@ class Qry implements IQry
 
     private $_limit = 0, $_offset = 0, $_object;
 
-    /** @var Comparison[] */
+        /** @var Comparison[] */
     private $_where = [];
-    private $_whereIn = [];
-    private $_whereNotIn = [];
-    /** @var WhereGroup[] */
-    private $_whereGroups = [];
+
     private $_update;
     private $_insert;
     private $_type;
@@ -42,7 +43,9 @@ class Qry implements IQry
     private $_having = [];
 
     //Params
-    private $_whereParams = [];
+    /** @var ParamStore */
+    private $paramStore;
+    //todo: Remove all these other params things.
     private $_updateParams = [];
     private $_insertParams = [];
     private $_rangesParams = [];
@@ -52,7 +55,7 @@ class Qry implements IQry
     
     public function __construct()
     {
-
+        $this->paramStore = new ParamStore();
     }
 
     #region statics
@@ -258,8 +261,8 @@ class Qry implements IQry
 
 
     public function getParams(){
-        //todo: Pray all ids are unique.
-        return array_merge($this->_updateParams, $this->_insertParams, $this->_whereParams, $this->_rangesParams, $this->_havingParams);
+        //todo: Refactor so everything uses the ParamStore
+        return array_merge($this->_updateParams, $this->_insertParams, $this->paramStore->getParams(), $this->_rangesParams, $this->_havingParams);
     }
 
     /**
@@ -470,7 +473,7 @@ class Qry implements IQry
      * @return Qry
      */
     public function where($condition1, $operator, $condition2){
-        $condition = new Comparison($condition1, $operator, $condition2);
+        $condition = Where::new($condition1, $operator, $condition2);
 
         $this->_where[] = $condition;
 
@@ -484,7 +487,7 @@ class Qry implements IQry
      * @return Qry
      */
     public function orWhere($condition1, $operator, $condition2){
-        $condition = new Comparison($condition1, $operator, $condition2, Comparison::TYPE_OR);
+        $condition = Where::new($condition1, $operator, $condition2, Comparison::TYPE_OR);
 
         $this->_where[] = $condition;
 
@@ -497,13 +500,11 @@ class Qry implements IQry
      * @return Qry
      */
     public function whereIn($column, array $values){
-        if (count($values) == 0) return $this;
 
+        $wi = WhereIn::new($column, $values);
+        if (count($this->_where) === 0) $wi->isFirst = true;
 
-        $this->_whereIn[] = [
-            'column' => $column,
-            'values' => $values
-        ];
+        $this->_where[] = $wi;
 
         return $this;
     }
@@ -514,13 +515,12 @@ class Qry implements IQry
      * @return Qry
      */
     public function whereNotIn($column, array $values){
-        if (count($values) == 0) return $this;
 
+        $wi = WhereIn::new($column, $values);
+        $wi->isNotIn = true;
+        if (count($this->_where) === 0) $wi->isFirst = true;
 
-        $this->_whereNotIn[] = [
-            'column' => $column,
-            'values' => $values
-        ];
+        $this->_where[] = $wi;
 
         return $this;
     }
@@ -530,7 +530,7 @@ class Qry implements IQry
      * @return Qry
      */
     public function whereGroup($group){
-        $this->_whereGroups[] = $group;
+        $this->_where[] = $group;
         return $this;
     }
 
@@ -540,15 +540,12 @@ class Qry implements IQry
      */
     public function orWhereGroup($group){
         $group->type = Comparison::TYPE_OR;
-        $this->_whereGroups[] = $group;
+        $this->_where[] = $group;
         return $this;
     }
 
     public function whereCount(){
-        return count($this->_where) +
-            count($this->_whereIn) +
-            count($this->_whereNotIn) +
-            count($this->_whereGroups);
+        return count($this->_where);
     }
 
 
@@ -744,109 +741,20 @@ class Qry implements IQry
         return true;
     }
 
-    private function getComparisonString(){
-        if (count($this->_where) === 0) return null;
-
-        $isFirst = true;
-        $string = "";
-        foreach ($this->_where as $comparison) {
-            if ($isFirst){
-                $isFirst = false;
-            } else if ($comparison->type === Comparison::TYPE_AND) {
-                $string .= " AND ";
-            } else if ($comparison->type === Comparison::TYPE_OR) {
-                $string .= " OR ";
-            } else {
-                throw new QueryBuilderException("No comparison type");
-            }
-
-            if ($comparison->needsUniqueId()) {
-                $comparison->uniqueId = H::getUniqueId($this->_whereParams);
-                $this->_whereParams[$comparison->uniqueId] = $comparison->condition2;
-            }
-
-            $string .= $comparison->toString();
-        }
-
-        return $string;
-    }
-
-    private function getWhereGroupsString(){
-        if (count($this->_whereGroups) === 0) return null;
-
-        $isFirst = true;
-        $string = "";
-        foreach ($this->_whereGroups as $group) {
-            if ($isFirst){
-                $isFirst = false;
-            } else if ($group->type === Comparison::TYPE_AND) {
-                $string .= " AND ";
-            } else if ($group->type === Comparison::TYPE_OR) {
-                $string .= " OR ";
-            } else {
-                throw new QueryBuilderException("No comparison type");
-            }
-
-            $group->setUniqueIds($this->_whereParams);
-
-            $string .= $group->toString();
-        }
-
-        return $string;
-    }
-
     private function getWhereString(){
         if ($this->whereCount() == 0) return '';
 
-        $this->_whereParams = [];
-        $strings = [];
+        $result = "";
+        $first = true;
+        foreach ($this->_where as $condition) {
+            $condition->isFirst = $first;
 
-        $comparisons = $this->getComparisonString();
-        if ($comparisons) $strings[] = $comparisons;
+            $result .= $condition->toString($this->paramStore);
 
-        $whereGroups = $this->getWhereGroupsString();
-        if ($whereGroups) $strings[] = $whereGroups;
-
-        foreach ($this->_whereIn as $condition) {
-            //Every whereIn has a column and an array of values for the IN part.
-
-            $condition['column'] = QryHelper::encap($condition['column']);
-
-            $inValues = [];
-            foreach ($condition['values'] as $value) {
-                $valueId = H::getUniqueId($this->_whereParams);
-                $this->_whereParams[$valueId] = $value;
-                $inValues[] = $valueId;
-            }
-
-            $inString = implode(', :', $inValues);
-
-            if (count($inValues) > 0){
-                $strings[] = "{$condition['column']} IN (:$inString)";
-            }
+            if ($first) $first = false;
         }
 
-        foreach ($this->_whereNotIn as $condition) {
-            //Every whereNotIn has a column and an array of values for the IN part.
-
-            $condition['column'] = QryHelper::encap($condition['column']);
-
-            $inValues = [];
-            foreach ($condition['values'] as $value) {
-                $valueId = H::getUniqueId($this->_whereParams);
-                $this->_whereParams[$valueId] = $value;
-                $inValues[] = $valueId;
-            }
-
-            $inString = implode(', :', $inValues);
-
-            if (count($inValues) > 0){
-                $strings[] = "{$condition['column']} NOT IN (:$inString)";
-            }
-
-        }
-
-        return " WHERE " . implode(' AND ', $strings);
+        return $result;
     }
 
     #endregion

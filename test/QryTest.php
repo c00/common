@@ -9,7 +9,7 @@
 use c00\QueryBuilder\Qry;
 use c00\QueryBuilder\QueryBuilderException;
 use c00\QueryBuilder\Ranges;
-use c00\QueryBuilder\WhereGroup;
+use c00\QueryBuilder\components\WhereGroup;
 
 class QryTest extends PHPUnit_Framework_TestCase{
 

@@ -11,53 +11,63 @@ namespace test;
 
 use c00\common\CovleDate;
 use c00\common\Helper;
-use c00\QueryBuilder\Comparison;
-use c00\QueryBuilder\QryHelper;
-use c00\QueryBuilder\WhereGroup;
+use c00\QueryBuilder\components\Comparison;
+use c00\QueryBuilder\components\WhereGroup;
+use c00\QueryBuilder\ParamStore;
 
 class WhereGroupTest extends \PHPUnit_Framework_TestCase
 {
 
     public function testBasicGroup(){
 
+        $ps = new ParamStore();
         $g = WhereGroup::new('name', '=', 'peter');
 
-        $params = [];
-        $g->setUniqueIds($params);
+        $g->isFirst = true;
+        $actual = $g->toString($ps);
+        $keys = array_keys($ps->getParams());
 
-        $keys = array_keys($params);
+        $expected = " WHERE (`name` = :{$keys[0]})";
+        $this->assertEquals($expected, $actual);
 
-        $expected = "(`name` = :{$keys[0]})";
-        $this->assertEquals($expected, $g->toString());
+        $g->isFirst = false;
+        $actual = $g->toString($ps);
+        $keys = array_keys($ps->getParams());
+
+        $expected = " AND (`name` = :{$keys[0]})";
+        $this->assertEquals($expected, $actual);
+
+        $g->type = Comparison::TYPE_OR;
+        $actual = $g->toString($ps);
+        $keys = array_keys($ps->getParams());
+
+        $expected = " OR (`name` = :{$keys[0]})";
+        $this->assertEquals($expected, $actual);
     }
 
     public function testBasicGroup2(){
-
+        $ps = new ParamStore();
         $g = WhereGroup::new('name', '=', 'peter')
             ->where('email', '=', 'peter@blaat.com');
 
-        $params = [];
-        $g->setUniqueIds($params);
+        $actual = $g->toString($ps);
+        $keys = array_keys($ps->getParams());
 
-        $keys = array_keys($params);
-
-        $expected = "(`name` = :{$keys[0]} AND `email` = :{$keys[1]})";
-        $this->assertEquals($expected, $g->toString());
+        $expected = " AND (`name` = :{$keys[0]} AND `email` = :{$keys[1]})";
+        $this->assertEquals($expected, $actual);
     }
 
     public function testBasicGroup3(){
-
+        $ps = new ParamStore();
         $g = WhereGroup::new('table.name', '=', 'peter')
             ->where('email', '=', 'peter@blaat.com')
             ->orWhere('id', '=', 1);
 
-        $params = [];
-        $g->setUniqueIds($params);
+        $actual = $g->toString($ps);
+        $keys = array_keys($ps->getParams());
 
-        $keys = array_keys($params);
-
-        $expected = "(`table`.`name` = :{$keys[0]} AND `email` = :{$keys[1]} OR `id` = :{$keys[2]})";
-        $this->assertEquals($expected, $g->toString());
+        $expected = " AND (`table`.`name` = :{$keys[0]} AND `email` = :{$keys[1]} OR `id` = :{$keys[2]})";
+        $this->assertEquals($expected, $actual);
     }
 
 
