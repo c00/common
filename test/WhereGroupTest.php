@@ -84,5 +84,19 @@ class WhereGroupTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($expected, $actual);
     }
 
+    public function testOrWhereIn(){
+        $ps = new ParamStore();
+        $g = WhereGroup::new('table.name', '=', 'peter')
+            ->where('email', '=', 'peter@blaat.com')
+            ->orWhere('id', '=', 1)
+            ->orWhereIn('name', ['peter', 'meg', 'steward']);
+
+        $actual = $g->toString($ps);
+        $keys = array_keys($ps->getParams());
+
+        $expected = " AND (`table`.`name` = :{$keys[0]} AND `email` = :{$keys[1]} OR `id` = :{$keys[2]} OR `name` IN (:{$keys[3]}, :{$keys[4]}, :{$keys[5]}))";
+        $this->assertEquals($expected, $actual);
+    }
+
 
 }

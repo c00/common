@@ -93,6 +93,36 @@ class WhereGroup extends Comparison
     }
 
     /**
+     * @param $column
+     * @param array $values
+     * @return WhereGroup
+     */
+    public function orWhereIn($column, array $values){
+
+        $wi = WhereIn::new($column, $values, Comparison::TYPE_OR);
+
+
+        $this->conditions[] = $wi;
+
+        return $this;
+    }
+
+    /**
+     * @param $column
+     * @param array $values
+     * @return WhereGroup
+     */
+    public function orWhereNotIn($column, array $values){
+
+        $wi = WhereIn::new($column, $values, Comparison::TYPE_OR);
+        $wi->isNotIn = true;
+
+        $this->conditions[] = $wi;
+
+        return $this;
+    }
+
+    /**
      * @param null|ParamStore $ps
      * @return string
      * @throws QueryBuilderException
