@@ -64,6 +64,35 @@ class WhereGroup extends Comparison
     }
 
     /**
+     * @param $column
+     * @param array $values
+     * @return WhereGroup
+     */
+    public function whereIn($column, array $values){
+
+        $wi = WhereIn::new($column, $values);
+
+        $this->conditions[] = $wi;
+
+        return $this;
+    }
+
+    /**
+     * @param $column
+     * @param array $values
+     * @return WhereGroup
+     */
+    public function whereNotIn($column, array $values){
+
+        $wi = WhereIn::new($column, $values);
+        $wi->isNotIn = true;
+
+        $this->conditions[] = $wi;
+
+        return $this;
+    }
+
+    /**
      * @param null|ParamStore $ps
      * @return string
      * @throws QueryBuilderException
@@ -83,6 +112,7 @@ class WhereGroup extends Comparison
 
                 $first = false;
             } else {
+                $condition->isFirst = false;
                 $string .= $condition->toString($ps);
             }
 

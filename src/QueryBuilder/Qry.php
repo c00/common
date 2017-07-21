@@ -11,6 +11,7 @@ namespace c00\QueryBuilder;
 use c00\common\Helper as H;
 use c00\common\IDatabaseObject;
 use c00\QueryBuilder\components\Comparison;
+use c00\QueryBuilder\components\WhereClause;
 use c00\QueryBuilder\components\WhereGroup;
 use c00\QueryBuilder\components\WhereIn;
 use c00\QueryBuilder\components\Where;
@@ -31,8 +32,8 @@ class Qry implements IQry
 
     private $_limit = 0, $_offset = 0, $_object;
 
-        /** @var Comparison[] */
-    private $_where = [];
+        /** @var WhereClause */
+    private $_where;
 
     private $_update;
     private $_insert;
@@ -55,6 +56,7 @@ class Qry implements IQry
     
     public function __construct()
     {
+        $this->_where = new WhereClause();
         $this->paramStore = new ParamStore();
     }
 
@@ -475,7 +477,7 @@ class Qry implements IQry
     public function where($condition1, $operator, $condition2){
         $condition = Where::new($condition1, $operator, $condition2);
 
-        $this->_where[] = $condition;
+        $this->_where->conditions[] = $condition;
 
         return $this;
     }
@@ -489,7 +491,7 @@ class Qry implements IQry
     public function orWhere($condition1, $operator, $condition2){
         $condition = Where::new($condition1, $operator, $condition2, Comparison::TYPE_OR);
 
-        $this->_where[] = $condition;
+        $this->_where->conditions[] = $condition;
 
         return $this;
     }
@@ -502,9 +504,9 @@ class Qry implements IQry
     public function whereIn($column, array $values){
 
         $wi = WhereIn::new($column, $values);
-        if (count($this->_where) === 0) $wi->isFirst = true;
+        if ($this->_where->isEmpty()) $wi->isFirst = true;
 
-        $this->_where[] = $wi;
+        $this->_where->conditions[] = $wi;
 
         return $this;
     }
@@ -518,9 +520,9 @@ class Qry implements IQry
 
         $wi = WhereIn::new($column, $values);
         $wi->isNotIn = true;
-        if (count($this->_where) === 0) $wi->isFirst = true;
+        if ($this->_where->isEmpty()) $wi->isFirst = true;
 
-        $this->_where[] = $wi;
+        $this->_where->conditions[] = $wi;
 
         return $this;
     }
@@ -530,7 +532,7 @@ class Qry implements IQry
      * @return Qry
      */
     public function whereGroup($group){
-        $this->_where[] = $group;
+        $this->_where->conditions[] = $group;
         return $this;
     }
 
@@ -540,12 +542,12 @@ class Qry implements IQry
      */
     public function orWhereGroup($group){
         $group->type = Comparison::TYPE_OR;
-        $this->_where[] = $group;
+        $this->_where->conditions[] = $group;
         return $this;
     }
 
     public function whereCount(){
-        return count($this->_where);
+        return count($this->_where->conditions);
     }
 
 
@@ -742,19 +744,7 @@ class Qry implements IQry
     }
 
     private function getWhereString(){
-        if ($this->whereCount() == 0) return '';
-
-        $result = "";
-        $first = true;
-        foreach ($this->_where as $condition) {
-            $condition->isFirst = $first;
-
-            $result .= $condition->toString($this->paramStore);
-
-            if ($first) $first = false;
-        }
-
-        return $result;
+        return $this->_where->toString($this->paramStore);
     }
 
     #endregion
