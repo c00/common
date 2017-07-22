@@ -42,6 +42,16 @@ abstract class AbstractDatabase
 
     }
 
+    /**
+     * @return DebugInfo|null
+     */
+    public function getLastQryInfo(){
+        $count = count($this->qryInfo);
+        if ($count === 0) return null;
+
+        return $this->qryInfo[$count-1];
+    }
+
     protected function connect($host, $user, $pass, $dbName, $port = null, $useCompression = false)
     {
         //Already connected? Just return true.

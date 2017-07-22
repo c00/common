@@ -398,4 +398,21 @@ class AbstractDatabaseTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(0, $this->db->stats['other']);
         $this->assertEquals(0, $this->db->stats['transactions']);
     }
+
+    public function testGetQryInfo(){
+        $this->assertNull($this->db->getLastQryInfo());
+
+        $this->db->debug = true;
+        $q = Qry::delete(self::TABLE_TEAM)
+            ->where('code', '=', 'aapjes44');
+        $this->db->deleteRows($q);
+
+        $actual = $this->db->getLastQryInfo()->sql;
+        $expected = "DELETE FROM `team` WHERE `code` = 'aapjes44'";
+
+
+        $this->assertEquals($actual, $expected);
+
+
+    }
 }
