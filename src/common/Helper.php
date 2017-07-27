@@ -217,4 +217,29 @@ class Helper
 
         return $id;
     }
+
+    /** Will group an array of objects or assoc arrays by a given property
+     * @param array $array
+     * @param string $property
+     * @return array
+     * @throws \Exception
+     */
+    public static function groupArray(array $array, string $property) : array
+    {
+        $result = [];
+
+        foreach ($array as $item) {
+            if (is_array($item)){
+                if (!isset($item[$property])) throw new \Exception("Property '$property' doesn't exist");
+                $result[$item[$property]][] = $item;
+            } else if (is_object($item)) {
+                if (!isset($item->$property)) throw new \Exception("Property '$property' doesn't exist");
+                $result[$item->$property][] = $item;
+            } else {
+                throw new \Exception("Array members need to be either Arrays or Objects");
+            }
+        }
+
+        return $result;
+    }
 }
