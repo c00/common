@@ -998,4 +998,14 @@ class QryTest extends PHPUnit_Framework_TestCase{
 
         $this->assertSame($expected, $sql);
     }
+
+    public function testGroupConcat() {
+        $expected = "SELECT GROUP_CONCAT(DISTINCT `hobby`) FROM `table`.`user`";
+
+        $query = Qry::select()
+            ->groupConcat('hobby', null, 'DISTINCT')
+            ->from('table.user');
+
+        $this->assertSame($expected, $query->getSql());
+    }
 }

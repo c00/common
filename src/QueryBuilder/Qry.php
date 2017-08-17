@@ -11,6 +11,7 @@ namespace c00\QueryBuilder;
 use c00\common\Helper as H;
 use c00\common\IDatabaseObject;
 use c00\QueryBuilder\components\Comparison;
+use c00\QueryBuilder\components\SelectFunction;
 use c00\QueryBuilder\components\WhereClause;
 use c00\QueryBuilder\components\WhereGroup;
 use c00\QueryBuilder\components\WhereIn;
@@ -351,6 +352,11 @@ class Qry implements IQry
         return $this->selectFunction("AVG", $column, $alias, $keyword);
     }
 
+
+    public function groupConcat($column, $alias = null, $keyword = null) {
+        return $this->selectFunction("GROUP_CONCAT", $column, $alias, $keyword);
+    }
+
     /**
      * @param $function string e.g. count
      * @param $column string e.g. id
@@ -360,19 +366,9 @@ class Qry implements IQry
      */
     public function selectFunction($function, $column, $alias = null, $keyword = null){
 
-        if (!$keyword) {
-            $keyword = '';
-        } else {
-            $keyword = trim($keyword) . ' ';
-        }
+        $f = new SelectFunction($function, $column, $alias, $keyword);
 
-        $column = "$function($keyword" . QryHelper::encapStringWithOperators($column) . ")";
-
-        if ($alias){
-            $this->_select[$alias] = $column;
-        } else {
-            $this->_select[] = $column;
-        }
+        $this->_select[] = $f->toString();
 
         return $this;
     }
