@@ -101,7 +101,7 @@ class Qry implements IQry
      *
      * Used when you need to group ranges together, such as dates.
      *
-     * @param Ranges $ranges
+     * @param Ranges|\c00\QueryBuilder\components\Ranges $ranges
      * @return Qry
      */
     public static function selectRange($ranges){

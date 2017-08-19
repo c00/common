@@ -20,7 +20,9 @@ class RangeCase implements IQryComponent
     const TYPE_BETWEEN = 'between';
 
     private $low;
+    private $lowId;
     private $high;
+    private $highId;
     private $type;
     private $column;
     private $label;
@@ -83,10 +85,10 @@ class RangeCase implements IQryComponent
      * @throws QueryBuilderException when type is unknown
      */
     private function toBetweenString($ps = null) {
-        $lowId = $ps->addParam($this->low);
-        $highId = $ps->addParam($this->high);
+        if (!$this->lowId) $this->lowId = $ps->addParam($this->low);
+        if (!$this->highId) $this->highId = $ps->addParam($this->high);
 
-        return "WHEN ". QryHelper::encap($this->column) . " BETWEEN :$lowId AND :$highId THEN '{$this->label}'";
+        return "WHEN ". QryHelper::encap($this->column) . " BETWEEN :{$this->lowId} AND :{$this->highId} THEN '{$this->label}'";
     }
 
 
@@ -96,9 +98,9 @@ class RangeCase implements IQryComponent
      * @throws QueryBuilderException when type is unknown
      */
     private function toLessThanString($ps = null) {
-        $id = $ps->addParam($this->low);
+        if (!$this->lowId) $this->lowId = $ps->addParam($this->low);
 
-        return "WHEN ". QryHelper::encap($this->column) . " < :$id THEN '{$this->label}'";
+        return "WHEN ". QryHelper::encap($this->column) . " < :{$this->lowId} THEN '{$this->label}'";
     }
 
     /**
@@ -107,9 +109,9 @@ class RangeCase implements IQryComponent
      * @throws QueryBuilderException when type is unknown
      */
     private function toGreaterThanString($ps = null) {
-        $id = $ps->addParam($this->low);
+        if (!$this->lowId) $this->lowId = $ps->addParam($this->low);
 
-        return "WHEN ". QryHelper::encap($this->column) . " > :$id THEN '{$this->label}'";
+        return "WHEN ". QryHelper::encap($this->column) . " > :{$this->lowId} THEN '{$this->label}'";
     }
 
 }

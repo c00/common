@@ -18,6 +18,8 @@ class WhereIn extends Comparison
     public $values = [];
     public $isNotIn = false;
 
+    public $ids = [];
+
     /**
      * @param $column
      * @param $values
@@ -60,10 +62,12 @@ class WhereIn extends Comparison
         //Return empty IN clause
         if (count($this->values) === 0) return " {$this->getType()} {$column} {$this->getComparator()} ()";
 
-        //Create parameters
-        $inValues = $ps->addParams($this->values);
+        if (count($this->ids) === 0) {
+            //Create parameters
+            $this->ids = $ps->addParams($this->values);
+        }
 
-        $inString = ":" . implode(', :', $inValues);
+        $inString = ":" . implode(', :', $this->ids);
         return " {$this->getType()} {$column} {$this->getComparator()} ($inString)";
     }
 }

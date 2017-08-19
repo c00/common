@@ -8,9 +8,6 @@
 
 namespace c00\QueryBuilder\components;
 
-
-use c00\QueryBuilder\ParamStore;
-
 class WhereClause implements IQryComponent
 {
     /** @var Comparison[] */

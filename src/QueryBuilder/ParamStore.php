@@ -20,6 +20,10 @@ class ParamStore
         return $this->params;
     }
 
+    public function reset() {
+        $this->params = [];
+    }
+
     public function addParam($value){
         $id = $this->getNewId();
         $this->params[$id] = $value;
