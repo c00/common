@@ -11,6 +11,9 @@ namespace c00\QueryBuilder;
 use c00\common\Helper as H;
 use c00\common\IDatabaseObject;
 use c00\QueryBuilder\components\Comparison;
+use c00\QueryBuilder\components\From;
+use c00\QueryBuilder\components\FromClass;
+use c00\QueryBuilder\components\FromClause;
 use c00\QueryBuilder\components\SelectFunction;
 use c00\QueryBuilder\components\WhereClause;
 use c00\QueryBuilder\components\WhereGroup;
@@ -29,7 +32,8 @@ class Qry implements IQry
 
     private $_select = [];
     private $_distinct = false;
-    private $_from = [];
+    /** @var FromClause */
+    private $_from;
 
     private $_limit = 0, $_offset = 0, $_object;
 
@@ -57,6 +61,7 @@ class Qry implements IQry
     
     public function __construct()
     {
+        $this->_from = new FromClause();
         $this->_where = new WhereClause();
         $this->paramStore = new ParamStore();
     }
@@ -216,7 +221,7 @@ class Qry implements IQry
     public function getSql(&$params = null){
         if ($this->_type == self::TYPE_SELECT){
             $sql = $this->getSelectString() .
-                $this->getFromString() .
+                $this->_from->toString() .
                 $this->_join .
                 $this->getWhereString() .
                 $this->getGroupByString() .
@@ -245,19 +250,10 @@ class Qry implements IQry
         //If there's a join, we need some stuff at the beginning.
         $tableString = '';
         if ($this->_join) {
-            $tables = [];
-            foreach ($this->_from as $alias => $table) {
-                if (!is_numeric($alias)) {
-                    $tables[] = QryHelper::encap($alias);
-                } else {
-                    $tables[] = $table;
-                }
-            }
-
-            $tableString = ' ' . implode(', ', $tables);
+            $tableString = ' ' . implode(', ', $this->_from->getTableNames());
         }
 
-        $sql = "DELETE" . $tableString . $this->getFromString() . $this->_join . $this->getWhereString();
+        $sql = "DELETE" . $tableString . $this->_from->toString() . $this->_join . $this->getWhereString();
 
         return $sql;
     }
@@ -379,33 +375,47 @@ class Qry implements IQry
      * @return Qry
      */
     public function from($tables){
+        /*
+         * Tables come in the shape of
+         *    ['alias' => 'tableName', ...]
+         * or ['tablename', ...]
+         * or ['alias' => 'tableName', 'tablename', ...]
+         *
+         * Combinations are possible.
+         */
+
         $this->checkDataType($tables, ['string', 'array']);
 
         //Normalize to array
         if (is_string($tables)) $tables = [$tables];
 
-        $tables = QryHelper::encapArray($tables);
+        foreach ($tables as $key => $table) {
+            $alias = (is_numeric($key)) ? null : $key;
 
-        $this->_from = array_merge($this->_from, $tables);
+            $this->_from->tables[] = From::new($table, $alias);
+        }
 
         return $this;
     }
 
-    public function getFromString(){
-        $tables = [];
-        foreach ($this->_from as $alias => $table) {
-            $string = $table;
-            if (!is_numeric($alias)) $string .= " AS `$alias`";
-            $columnStrings[] = $string;
-            $tables[] = $string;
+
+    /**
+     * @param $class string The class name
+     * @param $table string The database table
+     * @param $alias string The alias used in the SQL query
+     * @return $this
+     * @throws QueryBuilderException Occurs when trying to add a second fromClass
+     */
+    public function fromClass($class, $table, $alias){
+        $this->checkDataTypes([$class, $table, $alias], 'string');
+
+        if ($this->_from->getTableWithClass()) {
+            throw new QueryBuilderException("Can only have one class in FROM clause.");
         }
 
+        $this->_from->tables[] = FromClass::new($table, $alias, $class);
 
-        if (count($tables) == 0) {
-            throw new QueryBuilderException("No FROM clause!");
-        }
-
-        return " FROM " . implode(', ', $tables);
+        return $this;
     }
 
     /**
@@ -547,6 +557,15 @@ class Qry implements IQry
     }
 
 
+    public function checkDataTypes($objects, $allowedTypes) {
+        $this->checkDataType($objects, 'array');
+
+        foreach ($objects as $object) {
+            $this->checkDataType($object, $allowedTypes);
+        }
+
+    }
+
     public function checkDataType($object, $allowedTypes){
         //CHECKING
         if (!is_string($allowedTypes) && ! is_array($allowedTypes)) {
@@ -584,7 +603,8 @@ class Qry implements IQry
 
     #region private
     private function getSelectString(){
-        //Add aliases too.
+        //todo update select string with classes (fromClass and fromJoin)
+
 
         $columns = [];
         foreach ($this->_select as $alias => $column) {

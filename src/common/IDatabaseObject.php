@@ -16,9 +16,10 @@ interface IDatabaseObject{
     public static function fromArray($array);
 
     /** Converts the object into an array
+     * @param $keepNulls bool Keep properties with null values
      * @return array
      */
-    public function toArray();
+    public function toArray($keepNulls = false);
 
     public function toShowable();
 }
