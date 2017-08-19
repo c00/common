@@ -8,6 +8,8 @@ use c00\QueryBuilder\components\Comparison;
 use c00\QueryBuilder\components\From;
 use c00\QueryBuilder\components\FromClass;
 use c00\QueryBuilder\components\FromClause;
+use c00\QueryBuilder\components\Join;
+use c00\QueryBuilder\components\JoinClause;
 use c00\QueryBuilder\components\SelectClause;
 use c00\QueryBuilder\components\SelectFunction;
 use c00\QueryBuilder\components\WhereClause;
@@ -38,7 +40,9 @@ class Qry implements IQry
     private $_update;
     private $_insert;
     private $_type;
-    private $_join = '';
+
+    /** @var  JoinClause */
+    private $_join;
     private $_orderBy = [];
     private $_groupBy = [];
     private $_having = [];
@@ -57,6 +61,7 @@ class Qry implements IQry
     {
         $this->_select = new SelectClause();
         $this->_from = new FromClause();
+        $this->_join = new JoinClause();
         $this->_where = new WhereClause();
         $this->paramStore = new ParamStore();
     }
@@ -199,7 +204,7 @@ class Qry implements IQry
         if ($this->_type == self::TYPE_SELECT){
             $sql = $this->getSelectString() .
                 $this->_from->toString() .
-                $this->_join .
+                $this->_join->toString() .
                 $this->getWhereString() .
                 $this->getGroupByString() .
                 $this->getHavingString() .
@@ -226,11 +231,11 @@ class Qry implements IQry
     private function buildDeleteSql(){
         //If there's a join, we need some stuff at the beginning.
         $tableString = '';
-        if ($this->_join) {
+        if ($this->_join->hasAny()) {
             $tableString = ' ' . implode(', ', $this->_from->getTableNames());
         }
 
-        $sql = "DELETE" . $tableString . $this->_from->toString() . $this->_join . $this->getWhereString();
+        $sql = "DELETE" . $tableString . $this->_from->toString() . $this->_join->toString() . $this->getWhereString();
 
         return $sql;
     }
@@ -403,21 +408,20 @@ class Qry implements IQry
      * @return Qry
      */
     public function join($table, $column1, $operator, $column2){
-        $alias = "";
+
+        $alias = null;
         if (is_array($table)){
             reset($table);
             $key = key($table);
-            if (!is_numeric($key)) $alias = " AS ". QryHelper::encap($key);
+            if (!is_numeric($key)) $alias = $key;
 
             //Make table to be a string.
             $table = $table[$key];
         }
 
-        $column1 = QryHelper::encap($column1);
-        $column2 = QryHelper::encap($column2);
-        $table = QryHelper::encap($table);
+        $join = Join::newJoin($table, $alias, $column1, $operator, $column2);
 
-        $this->_join .= " JOIN {$table}{$alias} ON $column1 $operator $column2";
+        $this->_join->joins[] = $join;
 
         return $this;
     }
@@ -436,17 +440,15 @@ class Qry implements IQry
         if (is_array($table)){
             reset($table);
             $key = key($table);
-            if (!is_numeric($key)) $alias = " AS ". QryHelper::encap($key);
+            if (!is_numeric($key)) $alias = $key;
 
             //Make table to be a string.
             $table = $table[$key];
         }
 
-        $column1 = QryHelper::encap($column1);
-        $column2 = QryHelper::encap($column2);
-        $table = QryHelper::encap($table);
+        $join = Join::newOuterJoin($table, $alias, $column1, $operator, $column2, $direction);
 
-        $this->_join .= " $direction OUTER JOIN {$table}{$alias} ON $column1 $operator $column2";
+        $this->_join->joins[] = $join;
 
         return $this;
     }

@@ -15,6 +15,7 @@ abstract class Comparison
 {
     const TYPE_AND = "AND";
     const TYPE_OR = "OR";
+    const TYPE_JOIN = "ON";
 
     public $type = self::TYPE_AND;
     public $isFirst = false;
