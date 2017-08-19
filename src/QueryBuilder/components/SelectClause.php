@@ -1,19 +1,55 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: coo
- * Date: 19/08/17
- * Time: 13:09
- */
 
 namespace c00\QueryBuilder\components;
 
 use c00\common\Helper as H;
+use c00\QueryBuilder\QueryBuilderException;
 
 class SelectClause implements IQryComponent
 {
     /** @var Select[] */
-    public $columns = [];
+    private $columns = [];
+    public $distinct = false;
+
+    public function getColumns() {
+        return $this->columns;
+    }
+
+    /**
+     * @param $column string The column
+     * @param $alias string The alias
+     * @throws QueryBuilderException when duplicate column names are used.
+     */
+    public function addColumn($column, $alias = null) {
+        $select = Select::new($column, $alias);
+
+        $this->addSelect($select);
+    }
+
+    /**
+     * @param $select Select
+     * @throws QueryBuilderException when duplicate column names are used.
+     */
+    public function addSelect($select) {
+        $name = $select->getColumnName(false);
+
+        if (isset($this->columns[$name])) throw new QueryBuilderException("Duplicate column name: $name");
+
+        $this->columns[$select->getColumnName(false)] = $select;
+    }
+
+    /**
+     * @param $columns array as alias => column
+     */
+    public function addColumns($columns) {
+        if (is_string($columns)) $columns = [$columns];
+
+        foreach ($columns as $index => $column) {
+            $alias = (is_numeric($index)) ? null : $index;
+
+            $this->addColumn($column, $alias);
+        }
+    }
 
     /**
      * @param $fromClass FromClass
@@ -54,8 +90,7 @@ class SelectClause implements IQryComponent
         }
 
         //Set columns
-        // todo What about doubles?
-        $this->columns = array_merge($this->columns, $columns);
+        $this->columns = array_unique(array_merge($this->columns, $columns));
     }
 
     private function setStarForColumns() {
@@ -69,9 +104,7 @@ class SelectClause implements IQryComponent
         if (count($this->columns) === 0) return true;
 
 
-        if (count($this->columns) === 1
-            && isset($this->columns[0])
-            && $this->columns[0]->column == '*') {
+        if (count($this->columns) === 1 && isset($this->columns['*'])) {
             return true;
         }
 
@@ -84,11 +117,12 @@ class SelectClause implements IQryComponent
 
         $columns = [];
         foreach ($this->columns as $f) {
-            $columns[] = $f->toString();
+            $columns[] = $f->toString($ps);
         }
 
-        return "SELECT " . implode(', ', $columns);
-    }
+        $distinct = ($this->distinct) ? 'DISTINCT ' : "";
 
+        return "SELECT $distinct" . implode(', ', $columns);
+    }
 
 }

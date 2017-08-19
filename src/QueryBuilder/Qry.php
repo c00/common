@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Co
- * Date: 17/06/2016
- * Time: 10:26
- */
 
 namespace c00\QueryBuilder;
 
@@ -14,6 +8,7 @@ use c00\QueryBuilder\components\Comparison;
 use c00\QueryBuilder\components\From;
 use c00\QueryBuilder\components\FromClass;
 use c00\QueryBuilder\components\FromClause;
+use c00\QueryBuilder\components\SelectClause;
 use c00\QueryBuilder\components\SelectFunction;
 use c00\QueryBuilder\components\WhereClause;
 use c00\QueryBuilder\components\WhereGroup;
@@ -30,14 +25,14 @@ class Qry implements IQry
     /** @var string For debug purposes this gets filled after getSql(). */
     public $sql;
 
-    private $_select = [];
-    private $_distinct = false;
+    /** @var SelectClause */
+    private $_select;
     /** @var FromClause */
     private $_from;
 
     private $_limit = 0, $_offset = 0, $_object;
 
-        /** @var WhereClause */
+    /** @var WhereClause */
     private $_where;
 
     private $_update;
@@ -54,13 +49,13 @@ class Qry implements IQry
     //todo: Remove all these other params things.
     private $_updateParams = [];
     private $_insertParams = [];
-    private $_rangesParams = [];
     private $_havingParams = [];
 
     private $_returnClass = '';
     
     public function __construct()
     {
+        $this->_select = new SelectClause();
         $this->_from = new FromClause();
         $this->_where = new WhereClause();
         $this->paramStore = new ParamStore();
@@ -95,28 +90,11 @@ class Qry implements IQry
     public static function select($columns = [], $distinct = false){
         $q = new Qry();
 
-        //Normalize to array
-        if (is_string($columns)) $columns = [$columns];
-
-
-        //Yes, the isset is necessary, in case it's a assoc array.
-        if (count($columns) == 1 && isset($columns[0]) && $columns[0] == '*') {
-
-            //Just empty it. We convert it into * later on if necessary.
-            $columns = [];
-        }
-
-        //encap column names.
-        foreach ($columns as $alias => &$column) {
-            $column = QryHelper::encap($column);
-        }
-
-        $q->_distinct = $distinct;
-        $q->_select = $columns;
+        $q->_select->addColumns($columns);
+        $q->_select->distinct = $distinct;
         $q->_type = self::TYPE_SELECT;
-        return $q;
 
-        //At the end we end up with an array that has: alias => `table`.`column` for each column.
+        return $q;
     }
 
     /** Selects grouped ranges.
@@ -126,11 +104,10 @@ class Qry implements IQry
      * @param Ranges $ranges
      * @return Qry
      */
-    public static function selectRange(Ranges $ranges){
+    public static function selectRange($ranges){
         $q = self::select();
-        $q->_select[$ranges->alias] = $ranges->getCaseColumn();
+        $q->_select->addSelect($ranges);
         $q->groupBy($ranges->alias);
-        $q->_rangesParams = $ranges->params;
 
         return $q;
     }
@@ -261,7 +238,7 @@ class Qry implements IQry
 
     public function getParams(){
         //todo: Refactor so everything uses the ParamStore
-        return array_merge($this->_updateParams, $this->_insertParams, $this->paramStore->getParams(), $this->_rangesParams, $this->_havingParams);
+        return array_merge($this->_updateParams, $this->_insertParams, $this->paramStore->getParams(), $this->_havingParams);
     }
 
     /**
@@ -364,7 +341,7 @@ class Qry implements IQry
 
         $f = new SelectFunction($function, $column, $alias, $keyword);
 
-        $this->_select[] = $f->toString();
+        $this->_select->addSelect($f);
 
         return $this;
     }
@@ -603,10 +580,12 @@ class Qry implements IQry
 
     #region private
     private function getSelectString(){
+
+        return $this->_select->toString($this->paramStore);
+
         //todo update select string with classes (fromClass and fromJoin)
 
-
-        $columns = [];
+        /*$columns = [];
         foreach ($this->_select as $alias => $column) {
             $string = $column;
             if (!is_numeric($alias)) $string .= " AS `$alias`";
@@ -619,7 +598,7 @@ class Qry implements IQry
 
         $distinct = ($this->_distinct)? "DISTINCT " : "";
 
-        return "SELECT $distinct" . implode(', ', $columns);
+        return "SELECT $distinct" . implode(', ', $columns);*/
     }
 
     private function getInsertString(){

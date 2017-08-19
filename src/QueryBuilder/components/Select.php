@@ -24,8 +24,11 @@ class Select implements IQryComponent
         return $f;
     }
 
-    public function getColumnName() {
-        return ($this->alias)? "`{$this->alias}`" : QryHelper::encap($this->column);
+    public function getColumnName($encapped = true) {
+
+        if ($encapped) return ($this->alias)? "`{$this->alias}`" : QryHelper::encap($this->column);
+
+        return ($this->alias)? $this->alias : $this->column;
     }
 
     public function toString($ps = null)
@@ -34,6 +37,11 @@ class Select implements IQryComponent
 
         $alias = ($this->alias) ? " AS `{$this->alias}`" : "";
         return "{$column}{$alias}";
+    }
+
+    public function __toString()
+    {
+        return $this->toString();
     }
 
 }

@@ -12,20 +12,27 @@ namespace c00\QueryBuilder\components;
 use c00\QueryBuilder\ParamStore;
 use c00\QueryBuilder\QryHelper;
 
-class SelectFunction implements IQryComponent
+class SelectFunction extends Select
 {
-    public $column;
-    public $alias;
     public $keyword;
     public $function;
 
-    public function __construct($function, $column, $alias = "", $keyword = null)
+    public function __construct($function, $column, $alias = null, $keyword = null)
     {
         $this->function = $function;
         $this->column = $column;
         $this->alias = $alias;
         $this->keyword = $keyword;
 
+    }
+
+    public function getColumnName($encapped = true)
+    {
+        $column = "{$this->function}({$this->column})";
+
+        if ($encapped) return ($this->alias)? "`{$this->alias}`" : QryHelper::encap($column);
+
+        return ($this->alias)? $this->alias : $column;
     }
 
     public function toString($ps = null)
