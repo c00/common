@@ -2,35 +2,34 @@
 
 namespace c00\QueryBuilder\components;
 
+use c00\common\Helper;
 use c00\QueryBuilder\QryHelper;
 
-class Join extends From
+class JoinClass extends Join
 {
-    /** @var Comparison */
-    protected $on;
-
-    protected $isOuter;
-    protected $direction;
+    public $class;
 
 
-    public static function newJoin($table, $alias, $condition1, $operator, $condition2) {
-        $j = new Join();
+    public static function newJoinClass($class, $table, $alias, $condition1, $operator, $condition2) {
+        $j = new JoinClass();
         $j->table = $table;
         $j->on = Where::new($condition1, $operator, '**'.$condition2, Where::TYPE_JOIN);
         $j->on->isFirst = false;
         $j->alias = $alias;
+        $j->class = $class;
 
         return $j;
     }
 
-    public static function newOuterJoin($table, $alias, $condition1, $operator, $condition2, $direction = "LEFT") {
-        $j = new Join();
+    public static function newOuterJoinClass($class, $table, $alias, $condition1, $operator, $condition2, $direction = "LEFT") {
+        $j = new JoinClass();
         $j->table = $table;
         $j->on = Where::new($condition1, $operator, '**'.$condition2, Where::TYPE_JOIN);
         $j->on->isFirst = false;
         $j->alias = $alias;
         $j->isOuter = true;
         $j->direction = $direction;
+        $j->class = $class;
 
         return $j;
     }
@@ -43,9 +42,7 @@ class Join extends From
         return " {$this->getJoinKeywords()}{$table}{$alias}{$this->on->toString($ps)}";
     }
 
-    protected function getJoinKeywords() {
-        if (!$this->isOuter) return "JOIN ";
-
-        return "{$this->direction} OUTER JOIN ";
+    public function getClassColumns() {
+        return Helper::getClassColumns($this->class, $this->alias);
     }
 }

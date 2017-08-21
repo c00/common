@@ -20,8 +20,13 @@ abstract class AbstractDatabaseObject implements IDatabaseObject
     ];
     /** @var  array */
     protected $_mapping = [];
+    /** @var  array */
     protected $_dataTypes = [];
+    /** @var  array */
     protected $_ignore = [];
+
+    /** @var string The unique identifier for this object. Used by ObjectBuilder */
+    protected $_identifier = 'id';
 
     /** Turns an array into an instance of @static
      * @param $array array
@@ -35,12 +40,31 @@ abstract class AbstractDatabaseObject implements IDatabaseObject
         return $o;
     }
 
+    /** Check if the given property is defined as a DB Object.
+     *
+     * Doesn't check the property itself, only the its definition in _dataTypes
+     * @param $property
+     * @return bool
+     */
+    private function isDbObject($property) {
+        //Is there a definition?
+        if (!isset($this->_dataTypes[$property])) return false;
+
+        //Is it a scalar type?
+        $className = $this->_dataTypes[$property];
+        if ($this->isScalarType($className)) return false;
+
+        //Does it implement IDatabaseObject?
+        return (in_array(IDatabaseObject::class, class_implements($className)));
+    }
+
     /** Converts the object into an array.
      * Use this to 'prepare' an object to go into the database. Override this function to do any transformations.
      * @param $keepNulls bool Switch to keep Null values or omit them from the result.
+     * @param $keepNested bool Determines whether to call toArray() on properties that are also IDatabaseObjects, or ignore them.
      * @return array
      */
-    public function toArray($keepNulls = false)
+    public function toArray($keepNulls = false, $keepNested = true)
     {
         $mapping = (is_array($this->_mapping)) ? $this->_mapping : [];
 
@@ -48,12 +72,16 @@ abstract class AbstractDatabaseObject implements IDatabaseObject
 
         $result = [];
         foreach(get_class_vars(static::class) as $key => $value){
+            //Ignore empty values and properties that don't exist on the target object.
             if((!isset($this->$key) || $this->$key === null) && !$keepNulls) {
-                //Go to the next one.
                 continue;
             }
 
+            //Ignore anything that's in the _ignore property
             if (in_array($key, $this->_ignore)) continue;
+
+            //Ignore nested if we need to
+            if (!$keepNested && $this->isDbObject($key)) continue;
 
             //Filter out internal stuff.
             if (isset($internalFields[$key])) continue;
@@ -159,6 +187,12 @@ abstract class AbstractDatabaseObject implements IDatabaseObject
 
     private function isScalarType($type){
         return in_array($type, $this->scalarTypes);
+    }
+
+    public function getIdentifier() {
+        $id = $this->_identifier;
+
+        return isset($this->$id) ? $this->$id : null;
     }
 
     private function implementsDatabaseProperty($type){

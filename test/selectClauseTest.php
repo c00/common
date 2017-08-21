@@ -19,7 +19,7 @@ class selectClauseTest extends \PHPUnit_Framework_TestCase
         $clause = new SelectClause();
 
         $clause->addColumn('*');
-        $f = FromClass::new('user', 'u', User::class);
+        $f = FromClass::newFrom('user', 'u', User::class);
 
         $clause->addClassColumns($f, []);
 
@@ -34,7 +34,7 @@ class selectClauseTest extends \PHPUnit_Framework_TestCase
         $clause = new SelectClause();
 
         //no columns
-        $f = FromClass::new('user', 'u', User::class);
+        $f = FromClass::newFrom('user', 'u', User::class);
 
         $clause->addClassColumns($f, []);
 
@@ -52,7 +52,7 @@ class selectClauseTest extends \PHPUnit_Framework_TestCase
         $clause->addColumn('w.*');
         $clause->addColumn('q.date');
 
-        $f = FromClass::new('user', 'u', User::class);
+        $f = FromClass::newFrom('user', 'u', User::class);
 
         $clause->addClassColumns($f, []);
 
@@ -70,7 +70,7 @@ class selectClauseTest extends \PHPUnit_Framework_TestCase
         $clause->addColumn('w.*');
         $clause->addColumn('q.date');
 
-        $f = FromClass::new('user', 'u', User::class);
+        $f = FromClass::newFrom('user', 'u', User::class);
 
         $clause->addClassColumns(null, []);
 
@@ -90,7 +90,7 @@ class selectClauseTest extends \PHPUnit_Framework_TestCase
         $clause->addColumn('u.email', 'u.email');
         $clause->addColumn('u.*');
 
-        $f = FromClass::new('user', 'u', User::class);
+        $f = FromClass::newFrom('user', 'u', User::class);
 
         $clause->addClassColumns($f, []);
 

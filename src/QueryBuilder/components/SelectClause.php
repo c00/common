@@ -53,7 +53,7 @@ class SelectClause implements IQryComponent
 
     /**
      * @param $fromClass FromClass
-     * @param $joinClasses array todo will be JoinClass[]
+     * @param $joinClasses JoinClass[]
      */
     public function addClassColumns($fromClass, $joinClasses) {
         /** @var FromClass[] $array */
@@ -61,7 +61,6 @@ class SelectClause implements IQryComponent
         if ($fromClass) $array[] = $fromClass;
 
         if (count($array) === 0) return;
-
 
         /** @var Select[] $columns */
         $columns = [];

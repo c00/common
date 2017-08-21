@@ -278,6 +278,8 @@ abstract class AbstractDatabase
             throw new \Exception("This class doesn't implement IDatabaseObject");
         }
 
+        //todo Check if we should build a deep object, or a classic asClass thing.
+
         $result = [];
         foreach ($records as $record) {
             if ($toShowable) {

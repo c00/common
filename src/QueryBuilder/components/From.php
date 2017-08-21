@@ -16,7 +16,7 @@ class From implements IQryComponent
     public $table;
     public $alias;
 
-    public static function new($table, $alias = null) {
+    public static function newFrom($table, $alias = null) {
         $f = new static();
         $f->table = $table;
         $f->alias = $alias;

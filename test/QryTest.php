@@ -10,6 +10,8 @@ use c00\QueryBuilder\Qry;
 use c00\QueryBuilder\QueryBuilderException;
 use c00\QueryBuilder\components\Ranges;
 use c00\QueryBuilder\components\WhereGroup;
+use c00\sample\Session;
+use c00\sample\User;
 
 class QryTest extends PHPUnit_Framework_TestCase{
 
@@ -1008,4 +1010,62 @@ class QryTest extends PHPUnit_Framework_TestCase{
 
         $this->assertSame($expected, $query->getSql());
     }
+
+    public function testFromClass() {
+        /*
+         * The query builder will add all User columns to the SELECT here itself,
+         * because there's no columns defined and fromClass is used.
+         */
+        $q = Qry::select()
+            ->fromClass(User::class, 'user', 'u')
+            ->where('name', '=', 'little finger');
+
+        $params = [];
+        $actual = $q->getSql($params);
+        $keys = array_keys($params);
+
+        $expected = "SELECT `u`.`id` AS `u.id`, `u`.`name` AS `u.name`, `u`.`email` AS `u.email`, `u`.`active` AS `u.active`, `u`.`profileImage` AS `u.profileImage` FROM `user` AS `u` WHERE `name` = :{$keys[0]}";
+
+        $this->assertEquals($expected, $actual);
+    }
+
+    public function testFromAndJoinClass() {
+        /*
+         * The query builder will add all User and Session columns to the SELECT here itself,
+         * because there's no columns defined and fromClass is used.
+         */
+        $q = Qry::select()
+            ->fromClass(User::class, 'user', 'u')
+            ->joinClass(Session::class, 'session', 's', 's.userId', '=', 'u.id')
+            ->where('name', '=', 'little finger');
+
+        $params = [];
+        $actual = $q->getSql($params);
+        $keys = array_keys($params);
+
+        $expected = "SELECT `s`.`id` AS `s.id`, `s`.`userId` AS `s.userId`, `s`.`token` AS `s.token`, `s`.`expires` AS `s.expires`, `u`.`id` AS `u.id`, `u`.`name` AS `u.name`, `u`.`email` AS `u.email`, `u`.`active` AS `u.active`, `u`.`profileImage` AS `u.profileImage` FROM `user` AS `u` JOIN `session` AS `s` ON `s`.`userId` = `u`.`id` WHERE `name` = :{$keys[0]}";
+
+        $this->assertEquals($expected, $actual);
+    }
+
+    public function testFromAndJoinClass2() {
+        /*
+         * The query builder will add all User and Session columns to the SELECT here itself,
+         * because there's no columns defined and fromClass is used.
+         */
+        $q = Qry::select(['u.name', 's.*'])
+            ->fromClass(User::class, 'user', 'u')
+            ->joinClass(Session::class, 'session', 's', 's.userId', '=', 'u.id')
+            ->where('name', '=', 'little finger');
+
+        $params = [];
+        $actual = $q->getSql($params);
+        $keys = array_keys($params);
+
+        $expected = "SELECT `u`.`name`, `s`.`id` AS `s.id`, `s`.`userId` AS `s.userId`, `s`.`token` AS `s.token`, `s`.`expires` AS `s.expires` FROM `user` AS `u` JOIN `session` AS `s` ON `s`.`userId` = `u`.`id` WHERE `name` = :{$keys[0]}";
+
+        $this->assertEquals($expected, $actual);
+    }
+
+    //todo fromClassTests joinClassTest
 }

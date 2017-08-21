@@ -9,6 +9,7 @@ use c00\QueryBuilder\components\From;
 use c00\QueryBuilder\components\FromClass;
 use c00\QueryBuilder\components\FromClause;
 use c00\QueryBuilder\components\Join;
+use c00\QueryBuilder\components\JoinClass;
 use c00\QueryBuilder\components\JoinClause;
 use c00\QueryBuilder\components\SelectClause;
 use c00\QueryBuilder\components\SelectFunction;
@@ -271,8 +272,42 @@ class Qry implements IQry
         return $this;
     }
 
+    /** Gets the class set by fromClass() or asClass()
+     * @return string
+     */
     public function getClass(){
+        $fromClass = $this->_from->getTableWithClass();
+        if ($fromClass) return $fromClass->class;
+
         return $this->_returnClass;
+    }
+
+    /**
+     * Gets the class mapping. The first entry is from fromClass.
+     * @return array ['alias' => className, ...]
+     */
+    public function getClasses() {
+        $fromClass = $this->_from->getTableWithClass();
+
+        $array = [ $fromClass->alias => $fromClass->class ];
+
+        foreach ($this->_join->getJoinsWithClass() as $join) {
+            $array[$join->alias] = $join->class;
+        }
+
+        return $array;
+    }
+
+    public function getJoins() {
+        return $this->_join->getJoinsWithClass();
+    }
+
+    public function getJoinInfo() {
+        //should return ['u.id' =>
+    }
+
+    public function hasNestedClasses() {
+        return ($this->_from->getTableWithClass() !== null);
     }
 
     public function getType(){
@@ -374,7 +409,7 @@ class Qry implements IQry
         foreach ($tables as $key => $table) {
             $alias = (is_numeric($key)) ? null : $key;
 
-            $this->_from->tables[] = From::new($table, $alias);
+            $this->_from->tables[] = From::newFrom($table, $alias);
         }
 
         return $this;
@@ -395,16 +430,16 @@ class Qry implements IQry
             throw new QueryBuilderException("Can only have one class in FROM clause.");
         }
 
-        $this->_from->tables[] = FromClass::new($table, $alias, $class);
+        $this->_from->tables[] = FromClass::newFromClass($class, $table, $alias);
 
         return $this;
     }
 
     /**
-     * @param $table
-     * @param $column1
-     * @param $operator
-     * @param $column2
+     * @param $table string
+     * @param $column1 string e.g. user.firstName
+     * @param $operator string e.g. =, <, >, LIKE, IS, IS NOT
+     * @param $column2 string e.g. 'lisa'
      * @return Qry
      */
     public function join($table, $column1, $operator, $column2){
@@ -420,6 +455,25 @@ class Qry implements IQry
         }
 
         $join = Join::newJoin($table, $alias, $column1, $operator, $column2);
+
+        $this->_join->joins[] = $join;
+
+        return $this;
+    }
+
+    /**
+     * @param $class
+     * @param $table
+     * @param $alias
+     * @param $column1
+     * @param $operator
+     * @param $column2
+     * @return $this
+     */
+    public function joinClass($class, $table, $alias, $column1, $operator, $column2){
+        //todo For version 1.0, consolidate the signatures. either use the array format or don't.
+
+        $join = JoinClass::newJoinClass($class, $table, $alias, $column1, $operator, $column2);
 
         $this->_join->joins[] = $join;
 
@@ -447,6 +501,15 @@ class Qry implements IQry
         }
 
         $join = Join::newOuterJoin($table, $alias, $column1, $operator, $column2, $direction);
+
+        $this->_join->joins[] = $join;
+
+        return $this;
+    }
+
+    public function outerJoinClass($class, $table, $alias, $column1, $operator, $column2, $direction = "LEFT"){
+
+        $join = JoinClass::newOuterJoinClass($class, $table, $alias, $column1, $operator, $column2, $direction);
 
         $this->_join->joins[] = $join;
 
@@ -583,24 +646,9 @@ class Qry implements IQry
     #region private
     private function getSelectString(){
 
+        $this->_select->addClassColumns($this->_from->getTableWithClass(), $this->_join->getJoinsWithClass());
+
         return $this->_select->toString($this->paramStore);
-
-        //todo update select string with classes (fromClass and fromJoin)
-
-        /*$columns = [];
-        foreach ($this->_select as $alias => $column) {
-            $string = $column;
-            if (!is_numeric($alias)) $string .= " AS `$alias`";
-            $columnStrings[] = $string;
-            $columns[] = $string;
-        }
-
-        //If we have nothing, show the star!
-        if (count($columns) == 0) $columns[] = "*";
-
-        $distinct = ($this->_distinct)? "DISTINCT " : "";
-
-        return "SELECT $distinct" . implode(', ', $columns);*/
     }
 
     private function getInsertString(){

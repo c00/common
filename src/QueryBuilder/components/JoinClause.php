@@ -19,7 +19,7 @@ class JoinClause implements IQryComponent
 
 
     /** Will return the JoinClass objects if there is any.
-     * @return FromClass[]
+     * @return JoinClass[]
      */
     public function getJoinsWithClass(){
         $result = [];

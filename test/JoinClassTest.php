@@ -8,28 +8,23 @@
 
 namespace test;
 
-use c00\QueryBuilder\components\FromClass;
+use c00\QueryBuilder\components\JoinClass;
 use c00\QueryBuilder\components\Select;
 use c00\sample\MappedTeam;
 use c00\sample\User;
 
-class FromClassTest extends \PHPUnit_Framework_TestCase
+class JoinClassTest extends \PHPUnit_Framework_TestCase
 {
 
     public function testBasic(){
 
-        $f = FromClass::newFromClass(User::class,'user', 'userName');
-        $this->assertEquals('`user` AS `userName`', $f->toString());
-
-        $f = FromClass::newFromClass(User::class,'db.user', 'userName');
-        $this->assertEquals('`db`.`user` AS `userName`', $f->toString());
-
-        $f = FromClass::newFromClass(User::class,'db.user', 'u.userName');
-        $this->assertEquals('`db`.`user` AS `u.userName`', $f->toString());
+        $f = JoinClass::newJoinClass(User::class,'db.user', 'u', 'u.id', '=', 's.userId');
+        $expected = " JOIN `db`.`user` AS `u` ON `u`.`id` = `s`.`userId`";
+        $this->assertEquals($expected, $f->toString());
     }
 
     public function testClassWithIgnored() {
-        $f = FromClass::newFromClass(User::class,'user', 'u');
+        $f = JoinClass::newJoinClass(User::class,'user', 'u', 'u.id', '=', 's.userId');
 
         $columns = $f->getClassColumns();
         $expected = [
@@ -45,7 +40,7 @@ class FromClassTest extends \PHPUnit_Framework_TestCase
     }
 
     public function testClassWithMapping() {
-        $f = FromClass::newFromClass(MappedTeam::class, 'user', 'u');
+        $f = JoinClass::newJoinClass(MappedTeam::class, 'user', 'u', 'u.id', '=', 's.userId');
 
         $columns = $f->getClassColumns();
 

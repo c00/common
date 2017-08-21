@@ -11,6 +11,8 @@ use c00\dmc\DependencyContainer;
 use c00\dmc\Challenge;
 use c00\dmc\Answer;
 use c00\dmc\Team;
+use c00\QueryBuilder\components\Select;
+use c00\QueryBuilder\QueryBuilderException;
 
 /**
  * Class Helper
@@ -241,5 +243,33 @@ class Helper
         }
 
         return $result;
+    }
+
+    /** Gets the columns of a IDatabaseObject class.
+     * @param $class string Class name
+     * @param $alias string Table alias
+     * @return Select[]
+     * @throws QueryBuilderException
+     */
+    public static function getClassColumns($class, $alias) {
+        if (!$class) throw new QueryBuilderException('Like school in july. No class!');
+
+        $o = new $class();
+        if (!$o instanceof IDatabaseObject) {
+            throw new QueryBuilderException("{$class} doesn't implement IDatabaseObject");
+        }
+
+        //To array should do the necessary mappings wth $_mappings.
+        $keys = array_keys($o->toArray(true, false));
+
+        $columns = [];
+
+        foreach ($keys as $key) {
+            $c = "{$alias}.{$key}";
+            $columns[] = Select::new($c, $c);
+        }
+
+
+        return $columns;
     }
 }

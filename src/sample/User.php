@@ -19,7 +19,13 @@ class User extends AbstractDatabaseObject
     public $profileImage;
     public $notADatabaseField;
 
+    /** @var Session */
+    public $session;
+
     protected $_ignore = ['notADatabaseField'];
+
+    //Session should/will be ignored on toArray() (INSERTS and UPDATES) because it's not an IDatabaseProperty or Scalar
+    protected $_dataTypes = ['session' => Session::class];
 
     public function __construct()
     {
