@@ -28,7 +28,7 @@ class RangesTest extends \PHPUnit_Framework_TestCase
 
         $expected = "CASE WHEN `startTime` < :{$ids[0]} THEN 'early' " .
             "WHEN `startTime` BETWEEN :{$ids[1]} AND :{$ids[2]} THEN 'normal' " .
-            "WHEN `startTime` > :{$ids[3]} THEN 'late' END";
+            "WHEN `startTime` > :{$ids[3]} THEN 'late' END AS `period`";
 
         $this->assertEquals($expected, $actual);
     }
@@ -48,7 +48,7 @@ class RangesTest extends \PHPUnit_Framework_TestCase
 
         $expected = "CASE WHEN `startTime` < :{$ids[0]} THEN 'early' " .
             "WHEN `startTime` BETWEEN :{$ids[1]} AND :{$ids[2]} THEN 'normal' " .
-            "WHEN `startTime` > :{$ids[3]} THEN 'late' END";
+            "WHEN `startTime` > :{$ids[3]} THEN 'late' END AS `period`";
 
         $this->assertEquals($expected, $actual);
     }

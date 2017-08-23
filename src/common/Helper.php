@@ -7,10 +7,6 @@
  */
 
 namespace c00\common;
-use c00\dmc\DependencyContainer;
-use c00\dmc\Challenge;
-use c00\dmc\Answer;
-use c00\dmc\Team;
 use c00\QueryBuilder\components\Select;
 use c00\QueryBuilder\QueryBuilderException;
 

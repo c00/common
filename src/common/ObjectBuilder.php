@@ -93,7 +93,9 @@ class ObjectBuilder
             /** @var IDatabaseObject $o */
             $o = $className::fromArray($array);
             $id = $o->getIdentifier();
-            if ($id === null) throw new QueryBuilderException("Object of $className has no identifier");
+
+            //Especially in Outer Joins it's possible to have all null objects. Those should not be added.
+            if ($id === null) continue;
 
             //Don't add doubles.
             if (isset($this->objects[$table][$id])) continue;
@@ -120,15 +122,17 @@ class ObjectBuilder
 
     /**
      * @param IDatabaseObject $object
+     * @throws \Exception because it doesn't work yet.
      */
     private function nestObject($object) {
+        throw new \Exception("Not implemented yet");
         //skip if it's not a AbstractDatabaseObject
-        if (!$object instanceof AbstractDatabaseObject) return;
+        /*if (!$object instanceof AbstractDatabaseObject) return;
 
         $dataTypes = $this->getFilteredDataTypes($object);
         $joins = $this->q->getJoins();
         //Use joins to get the joined content
-        $bla = ";;";
+        $bla = ";;";*/
 
         //use datatypes to get the place to put them.
 

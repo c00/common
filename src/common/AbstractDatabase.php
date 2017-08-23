@@ -248,37 +248,28 @@ abstract class AbstractDatabase
 
         return $result[0];
     }
-    
-    public function getRows(IQry $q, $toShowable = false)
+
+    /**
+     * @param IQry $q The query
+     * @param bool $toShowable Convert result to Showable
+     * @return array
+     * @throws QueryBuilderException
+     * @throws \Exception
+     */
+    public function getRows($q, $toShowable = false)
     {
-        if ($q->getType() != Qry::TYPE_SELECT){
-            throw new QueryBuilderException("Wrong Query type!");
-        }
-
-        $statement = $this->db->prepare($q->getSql());
-        $where = $q->getParams();
-
-        if (!$statement) return false;
-
-        $this->bindWhereClause($statement, $where);
-
-        $this->logQueryStart($q->getType());
-        $statement->execute();
-        $this->logQueryEnd($q);
-
-        $records = $statement->fetchAll(PDO::FETCH_ASSOC);
-        
+        $records = $this->getRecords($q);
         //Return a list of Object?
         $className = $q->getClass();
-        if (empty($className)) return $records;
+
+        //Return if we don't need to make objects
+        if ($className === '') return $records;
 
         //Check interface implement
         $object = new $className();
         if (!$object instanceof IDatabaseObject) {
             throw new \Exception("This class doesn't implement IDatabaseObject");
         }
-
-        //todo Check if we should build a deep object, or a classic asClass thing.
 
         $result = [];
         foreach ($records as $record) {
@@ -290,6 +281,64 @@ abstract class AbstractDatabase
         }
 
         return $result;
+    }
+
+    /** Used to get database records turned into a collection of objects.
+     *
+     * The result will be an associative array with the table alias as key, and the array of objects as as the value.
+     * The array of objects is also associative where the keys are the object ids.
+     *
+     * @param Qry $q The query
+     * @param bool $toShowable Convert result to Showable
+     * @return array the resulting objects
+     * @throws QueryBuilderException
+     * @throws \Exception
+     */
+    public function getObjects($q, $toShowable = false)
+    {
+        $records = $this->getRecords($q);
+
+        $builder = ObjectBuilder::newInstance($q)->build($records);
+
+        $objects = $builder->objects;
+
+        if (!$toShowable) return $objects;
+
+        foreach ($objects as &$collection) {
+
+            foreach ($collection as &$object) {
+                /** @var IDatabaseObject $object */
+                $object = $object->toShowable();
+            }
+        }
+
+        return $objects;
+    }
+
+    /**
+     * @param $q IQry
+     * @return array
+     * @throws QueryBuilderException
+     */
+    private function getRecords($q) {
+        if ($q->getType() != Qry::TYPE_SELECT){
+            throw new QueryBuilderException("Wrong Query type!");
+        }
+
+        $statement = $this->db->prepare($q->getSql());
+        $where = $q->getParams();
+
+        if (!$statement) throw new QueryBuilderException("Invalid Query statement.");
+
+        $this->bindWhereClause($statement, $where);
+
+        $this->logQueryStart($q->getType());
+        $statement->execute();
+        $this->logQueryEnd($q);
+
+        $records = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+        return $records;
     }
 
     public function deleteRows(IQry $q, $returnRowCount = false)

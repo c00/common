@@ -12,7 +12,10 @@ use c00\QueryBuilder\Qry;
 use c00\QueryBuilder\QueryBuilderException;
 use c00\QueryBuilder\Ranges;
 use c00\sample\DatabaseWithTrait;
+use c00\sample\Session;
 use c00\sample\Team;
+use c00\sample\TeamSession;
+use c00\sample\User;
 use Prophecy\Exception\Exception;
 
 class AbstractDatabaseTest extends \PHPUnit_Framework_TestCase
@@ -414,5 +417,82 @@ class AbstractDatabaseTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($actual, $expected);
 
 
+    }
+
+    public function testGetObjects1() {
+        $q = Qry::select()
+            ->fromClass(Team::class, 'team', 't');
+
+        $objects = $this->db->getObjects($q);
+
+        $this->assertEquals(3, count($objects['t']));
+
+        $team = $objects['t'][1];
+
+        $this->assertTrue($team instanceof Team);
+        $this->assertEquals('The Dudemeisters', $team->name);
+    }
+
+    public function testGetObjects2() {
+        $q = Qry::select()
+            ->fromClass(Team::class, 'team', 't');
+
+        $objects = $this->db->getObjects($q, true);
+
+        $this->assertEquals(3, count($objects['t']));
+
+        $team = $objects['t'][1];
+
+        $this->assertTrue(is_array($team));
+        $this->assertEquals('The Dudemeisters', $team['name']);
+    }
+
+    public function testGetObjects3() {
+        $q = Qry::select()
+            ->fromClass(Team::class, 'team', 't')
+            ->joinClass(TeamSession::class, 'teamsession', 'ts', 't.id', '=', 'ts.teamId');
+
+        $objects = $this->db->getObjects($q);
+
+        $this->assertEquals(2, count($objects['t']));
+        $this->assertEquals(2, count($objects['ts']));
+
+        $token = '5bf1fd927dfb8679496a2e6cf00cbe50c1c87145';
+        $session = $objects['ts'][$token];
+
+        $this->assertTrue($session instanceof TeamSession);
+    }
+
+    public function testGetObjects4() {
+        $q = Qry::select()
+            ->fromClass(Team::class, 'team', 't')
+            ->outerJoinClass(TeamSession::class, 'teamsession', 'ts', 't.id', '=', 'ts.teamId');
+
+        $objects = $this->db->getObjects($q);
+
+        $this->assertEquals(3, count($objects['t']));
+        $this->assertEquals(2, count($objects['ts']));
+
+        $token = '5bf1fd927dfb8679496a2e6cf00cbe50c1c87145';
+        $session = $objects['ts'][$token];
+
+        $this->assertTrue($session instanceof TeamSession);
+    }
+
+    public function testGetObjects5() {
+        $q = Qry::select()
+            ->fromClass(Team::class, 'team', 't')
+            ->outerJoinClass(TeamSession::class, 'teamsession', 'ts', 't.id', '=', 'ts.teamId')
+            ->where('t.id', '=', 1);
+
+        $objects = $this->db->getObjects($q);
+
+        $this->assertEquals(1, count($objects['t']));
+        $this->assertEquals(1, count($objects['ts']));
+
+        $token = '5bf1fd927dfb8679496a2e6cf00cbe50c1c87145';
+        $session = $objects['ts'][$token];
+
+        $this->assertTrue($session instanceof TeamSession);
     }
 }

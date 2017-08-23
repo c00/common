@@ -298,14 +298,6 @@ class Qry implements IQry
         return $array;
     }
 
-    public function getJoins() {
-        return $this->_join->getJoinsWithClass();
-    }
-
-    public function getJoinInfo() {
-        //should return ['u.id' =>
-    }
-
     public function hasNestedClasses() {
         return ($this->_from->getTableWithClass() !== null);
     }

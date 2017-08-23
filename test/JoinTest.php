@@ -15,7 +15,7 @@ class JoinTest extends \PHPUnit_Framework_TestCase
 
     public function testBasic(){
         $join = Join::newJoin('user', 'u', 'u.id', '=', 's.userId');
-        $expected = " JOIN `user` `u` ON `u`.`id` = `s`.`userId`";
+        $expected = " JOIN `user` AS `u` ON `u`.`id` = `s`.`userId`";
         $this->assertEquals($expected, $join->toString());
     }
 
@@ -31,7 +31,7 @@ class JoinTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($expected, $join->toString());
 
         $join = Join::newOuterJoin('user', 'u', 'u.id', '=', 's.userId', 'RIGHT');
-        $expected = " RIGHT OUTER JOIN `user` `u` ON `u`.`id` = `s`.`userId`";
+        $expected = " RIGHT OUTER JOIN `user` AS `u` ON `u`.`id` = `s`.`userId`";
         $this->assertEquals($expected, $join->toString());
     }
 

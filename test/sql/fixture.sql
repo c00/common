@@ -412,4 +412,6 @@ CREATE TABLE `user` (
 INSERT INTO `user` (`id`, `email`, `firstName`, `lastName`, `password`, `isAdmin`, `active`, `created`) VALUES
   (1,	'coo@covle.com',	'Co',	'Tekkel',	'$2y$10$C5HZpETJUGaVAFemG0aB1OI0Cq6qbnFk5lpNVaJ4cjFN3./nzES2q',	1,	1,	0);
 
--- 2016-10-09 13:50:20
+INSERT INTO `teamsession` (`token`, `created`, `expires`, `renewed`, `teamId`, `deviceId`, `deviceType`, `messagesChecked`) VALUES
+('5bf1fd927dfb8679496a2e6cf00cbe50c1c87145',	1503469172,	1503469172,	1503469172,	1,	'b039fac980cdbebbe759d55ab4c28930c945e84f',	'unknown',	0),
+('96d297dbd35346a26d8680c46e5883e474ae72eb',	1503469172,	1503469172,	1503469172,	2,	'db84c84d684ab349f35b3655f6f8a250ca50f140',	'unknown',	0);

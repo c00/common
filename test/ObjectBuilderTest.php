@@ -44,8 +44,8 @@ class ObjectBuilderTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('Nadia@example.com', $nadia->email);
         $this->assertEquals(1, $nadia->active);
 
-        //put them together
-        $nested = $b->nest();
+        //todo put them together
+
 
     }
 }
