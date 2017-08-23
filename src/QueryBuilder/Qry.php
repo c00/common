@@ -428,7 +428,7 @@ class Qry implements IQry
     }
 
     /**
-     * @param $table string
+     * @param $table string|array
      * @param $column1 string e.g. user.firstName
      * @param $operator string e.g. =, <, >, LIKE, IS, IS NOT
      * @param $column2 string e.g. 'lisa'
@@ -454,12 +454,12 @@ class Qry implements IQry
     }
 
     /**
-     * @param $class
-     * @param $table
-     * @param $alias
-     * @param $column1
-     * @param $operator
-     * @param $column2
+     * @param $class string
+     * @param $table string
+     * @param $alias string
+     * @param $column1 string
+     * @param $operator string
+     * @param $column2 string
      * @return $this
      */
     public function joinClass($class, $table, $alias, $column1, $operator, $column2){
@@ -473,10 +473,10 @@ class Qry implements IQry
     }
 
     /**
-     * @param $table
-     * @param $column1
-     * @param $operator
-     * @param $column2
+     * @param $table string|array
+     * @param $column1 string
+     * @param $operator string
+     * @param $column2 string
      * @param string $direction
      * @return Qry
      */
@@ -499,6 +499,16 @@ class Qry implements IQry
         return $this;
     }
 
+    /**
+     * @param $class string
+     * @param $table string
+     * @param $alias string
+     * @param $column1 string
+     * @param $operator string
+     * @param $column2 string
+     * @param string $direction
+     * @return $this
+     */
     public function outerJoinClass($class, $table, $alias, $column1, $operator, $column2, $direction = "LEFT"){
 
         $join = JoinClass::newOuterJoinClass($class, $table, $alias, $column1, $operator, $column2, $direction);
