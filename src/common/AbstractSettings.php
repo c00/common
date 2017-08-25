@@ -130,6 +130,33 @@ abstract class AbstractSettings
         return true;
     }
 
+    /** Get Settings object from Array.
+     * @param $array
+     * @return AbstractSettings
+     * @throws \Exception
+     */
+    public static function fromArray($array) {
+        if (!isset($array['__class'])) throw new \Exception("I don't know which settings class this should be.");
+
+        $class = $array['__class'];
+        $key = H::getArrayValue($array, 'key', self::DEFAULT_KEY);
+        $path = H::getArrayValue($array, 'path', __DIR__);
+
+        $object = new $class($key, $path);
+        if (!$object instanceof AbstractSettings) throw new \Exception("Not a Settings object");
+
+        //copy properties to Settings object
+        $class_vars = get_class_vars(get_class($object));
+
+        foreach ($class_vars as $name => $value) {
+            if (isset($array[$name])){
+                $object->$name = $object->loadValue($array[$name]);
+            }
+        }
+
+        return $object;
+    }
+
     private function loadValue($array){
         //If it's just a value or a normal array, return that.
         if ($array === null || !is_array($array)) return $array;
@@ -153,6 +180,8 @@ abstract class AbstractSettings
             return $className::fromArray($array);
         } else if ($object instanceof IDatabaseProperty) {
             return $className::fromDb($array);
+        } else if ($object instanceof AbstractSettings) {
+            return $className::fromArray($array);
         }
 
         //Else, just instantiate

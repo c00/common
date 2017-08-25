@@ -89,7 +89,7 @@ class AbstractSettingsTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals('nested-settings', $loaded->name);
 
-        $loadedSample = $s->sampleSettings;
+        $loadedSample = $loaded->sampleSettings;
         $this->assertTrue($loadedSample instanceof SampleSettings);
         $this->assertTrue($loadedSample->users[0] instanceof User);
         $this->assertTrue($loadedSample->box instanceof Box);
