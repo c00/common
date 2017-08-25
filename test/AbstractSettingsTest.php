@@ -9,6 +9,7 @@
 namespace test;
 
 use c00\sample\Box;
+use c00\sample\NestedSettings;
 use c00\sample\SampleSettings;
 use c00\sample\Team;
 use c00\sample\User;
@@ -67,6 +68,33 @@ class AbstractSettingsTest extends \PHPUnit_Framework_TestCase
         $origJson = json_encode($s);
         $loadedJson = json_encode($loaded);
         $this->assertEquals($origJson, $loadedJson);
+    }
+
+    function testNestedSettingsClasses() {
+        $s = new NestedSettings('nested-settings', '/tmp/');
+
+        $s->loadDefaults();
+
+        $this->assertEquals('nested-settings', $s->name);
+
+        $sample = $s->sampleSettings;
+        $this->assertTrue($sample instanceof SampleSettings);
+        $this->assertTrue($sample->users[0] instanceof User);
+        $this->assertTrue($sample->box instanceof Box);
+
+        $s->save();
+
+        $loaded = new NestedSettings('nested-settings', '/tmp/');
+        $loaded->load();
+
+        $this->assertEquals('nested-settings', $loaded->name);
+
+        $loadedSample = $s->sampleSettings;
+        $this->assertTrue($loadedSample instanceof SampleSettings);
+        $this->assertTrue($loadedSample->users[0] instanceof User);
+        $this->assertTrue($loadedSample->box instanceof Box);
+
+
     }
 
 }

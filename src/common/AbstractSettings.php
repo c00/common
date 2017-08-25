@@ -84,6 +84,10 @@ abstract class AbstractSettings
             //To Db on DatabaseProperties
             $return = $value->toDb();
             $return['__class'] = get_class($value);
+        } else if (is_object($value) && $value instanceof AbstractSettings){
+            //To Db on DatabaseProperties
+            $return = $value->toArray();
+            $return['__class'] = get_class($value);
         } else if (is_object($value)) {
             $return = H::objectToArray($value);
             $return['__class'] = get_class($value);
