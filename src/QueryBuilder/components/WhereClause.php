@@ -24,7 +24,7 @@ class WhereClause implements IQryComponent
 
             $result .= $condition->toString($ps);
 
-            if ($first) $first = false;
+            if ($first && strlen($result) > 0) $first = false;
         }
 
         return $result;
