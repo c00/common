@@ -266,17 +266,16 @@ abstract class AbstractDatabase
         if ($className === '') return $records;
 
         //Check interface implement
-        $object = new $className();
-        if (!$object instanceof IDatabaseObject) {
-            throw new \Exception("This class doesn't implement IDatabaseObject");
+        if (!is_subclass_of($className, IDatabaseObject::class)) {
+            throw new \Exception("Class $className doesn't implement IDatabaseObject");
         }
 
         $result = [];
         foreach ($records as $record) {
             if ($toShowable) {
-                $result[] = $object::fromArray($record)->toShowable();
+                $result[] = $className::fromArray($record)->toShowable();
             } else {
-                $result[] = $object::fromArray($record);
+                $result[] = $className::fromArray($record);
             }
         }
 
