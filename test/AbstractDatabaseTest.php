@@ -21,6 +21,7 @@ use Prophecy\Exception\Exception;
 class AbstractDatabaseTest extends \PHPUnit_Framework_TestCase
 {
     const TABLE_TEAM = 'team';
+    const TABLE_TEAM_SESSION = 'teamsession';
 
     /** @var DatabaseWithTrait */
     private $db;
@@ -161,6 +162,25 @@ class AbstractDatabaseTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals(2, $this->db->stats['select']);
         $this->assertEquals(1, $this->db->stats['update']);
+    }
+
+    public function testUpdateWithJoin(){
+
+        $q = Qry::update(['t' => self::TABLE_TEAM], ['t.name' => 'Supreme donkey of the trouser pods'])
+            ->join(['ts' => self::TABLE_TEAM_SESSION], 't.id', '=', 'ts.teamId')
+            ->where('ts.token', '=', '5bf1fd927dfb8679496a2e6cf00cbe50c1c87145');
+
+        $this->assertTrue($this->db->updateRow($q));
+
+        $team = $this->db->getRow(
+            Qry::select('t.*')
+            ->from(['t' => self::TABLE_TEAM])
+                ->join(['ts' => self::TABLE_TEAM_SESSION], 't.id', '=', 'ts.teamId')
+                ->where('ts.token', '=', '5bf1fd927dfb8679496a2e6cf00cbe50c1c87145')
+                ->asClass(Team::class)
+        );
+
+        $this->assertEquals($team->name, "Supreme donkey of the trouser pods");
 
     }
 

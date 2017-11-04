@@ -453,6 +453,60 @@ class QryTest extends PHPUnit_Framework_TestCase{
         $this->assertEquals($expected, $actual);
     }
 
+    public function testUpdateJoin(){
+        $params = [];
+        $t = new \c00\sample\Team();
+        $t->active = 1;
+        $t->code = "teamcode";
+        $t->name = "teamname";
+
+        //note: I don't know the alias for the columns, so this might have unexpected real world consequences. Use an array instead.
+
+        $q = Qry::update(['u' => 'user'], $t)
+            ->where('u.code', '=', 123);
+
+        $actual = $q->getSql($params);
+        $keys = array_keys($params);
+        $expected = "UPDATE `user` AS `u` SET `name` = :{$keys[0]}, `code` = :{$keys[1]}, `active` = :$keys[2] WHERE `u`.`code` = :{$keys[3]}";
+
+        $this->assertEquals($expected, $actual);
+
+        //With JOIN
+        $q->join(['c' => 'challenge'], 't.challengeId', '=', 'c.id');
+
+        $actual = $q->getSql($params);
+        $keys = array_keys($params);
+        $expected = "UPDATE `user` AS `u` JOIN `challenge` AS `c` ON `t`.`challengeId` = `c`.`id` SET `name` = :{$keys[0]}, `code` = :{$keys[1]}, `active` = :$keys[2] WHERE `u`.`code` = :{$keys[3]}";
+
+        $this->assertEquals($expected, $actual);
+    }
+
+    public function testUpdateJoinWithArray(){
+        $params = [];
+        $updateBody = [
+            'u.name' => 'karel',
+            'u.code' => '666'
+        ];
+
+        $q = Qry::update(['u' => 'user'], $updateBody)
+            ->where('u.code', '=', 123);
+
+        $actual = $q->getSql($params);
+        $keys = array_keys($params);
+        $expected = "UPDATE `user` AS `u` SET `u`.`name` = :{$keys[0]}, `u`.`code` = :{$keys[1]} WHERE `u`.`code` = :{$keys[2]}";
+
+        $this->assertEquals($expected, $actual);
+
+        //With JOIN
+        $q->join(['c' => 'challenge'], 't.challengeId', '=', 'c.id');
+
+        $actual = $q->getSql($params);
+        $keys = array_keys($params);
+        $expected = "UPDATE `user` AS `u` JOIN `challenge` AS `c` ON `t`.`challengeId` = `c`.`id` SET `u`.`name` = :{$keys[0]}, `u`.`code` = :{$keys[1]} WHERE `u`.`code` = :{$keys[2]}";
+
+        $this->assertEquals($expected, $actual);
+    }
+
     public function testUpdateWhereIn(){
         $params = [];
         $t = new \c00\sample\Team();

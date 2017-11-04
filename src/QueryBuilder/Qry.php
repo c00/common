@@ -13,6 +13,7 @@ use c00\QueryBuilder\components\JoinClass;
 use c00\QueryBuilder\components\JoinClause;
 use c00\QueryBuilder\components\SelectClause;
 use c00\QueryBuilder\components\SelectFunction;
+use c00\QueryBuilder\components\UpdateClause;
 use c00\QueryBuilder\components\WhereClause;
 use c00\QueryBuilder\components\WhereGroup;
 use c00\QueryBuilder\components\WhereIn;
@@ -38,6 +39,7 @@ class Qry implements IQry
     /** @var WhereClause */
     private $_where;
 
+    /** @var UpdateClause */
     private $_update;
     private $_insert;
     private $_type;
@@ -52,7 +54,7 @@ class Qry implements IQry
     /** @var ParamStore */
     private $paramStore;
     //todo: Remove all these other params things.
-    private $_updateParams = [];
+    //private $_updateParams = [];
     private $_insertParams = [];
     private $_havingParams = [];
 
@@ -61,6 +63,7 @@ class Qry implements IQry
     public function __construct()
     {
         $this->_select = new SelectClause();
+        $this->_update = new UpdateClause();
         $this->_from = new FromClause();
         $this->_join = new JoinClause();
         $this->_where = new WhereClause();
@@ -89,7 +92,7 @@ class Qry implements IQry
     }
 
     /**
-     * @param array $columns
+     * @param array|string $columns
      * @param bool $distinct
      * @return Qry
      */
@@ -119,10 +122,11 @@ class Qry implements IQry
     }
 
     /**
-     * @param $table
+     * @param $table string|array
      * @param $object
      * @param array $where
      * @return Qry
+     * @throws \Exception
      */
     public static function update($table, $object, array $where = []){
         $q = new Qry();
@@ -130,9 +134,21 @@ class Qry implements IQry
         //Throw an error if it's not something I can `toArray`
         $q->checkDataType($object, [IDatabaseObject::class, 'array']);
 
-        $table = QryHelper::encap($table);
-        $q->_update = "UPDATE $table";
-        $q->_object = $object;
+        //Set table name
+        $q->checkDataType($table, ['string', 'array']);
+        if (is_string($table)) $table = [$table];
+        if (count($table) > 1) {
+            throw new \Exception("Update should only have one table. Use Joins to update multiple tables.");
+        }
+
+        foreach ($table as $key => $name) {
+            $alias = (is_numeric($key)) ? null : $key;
+
+            $q->_update->alias = $alias;
+            $q->_update->table = $name;
+        }
+
+        $q->_update->setObject($object);
 
         $q->_type = self::TYPE_UPDATE;
 
@@ -213,7 +229,7 @@ class Qry implements IQry
                 $this->getLimit();
 
         } else if ($this->_type == self::TYPE_UPDATE){
-            $sql = $this->_update . $this->getSetString() . $this->getWhereString();
+            $sql = $this->_update->toString() . $this->_join->toString() . $this->_update->getSetString($this->paramStore) . $this->getWhereString();
         } else if ($this->_type == self::TYPE_INSERT){
             $sql = $this->_insert . $this->getInsertString();
         } else if ($this->_type == self::TYPE_DELETE){
@@ -244,7 +260,7 @@ class Qry implements IQry
 
     public function getParams(){
         //todo: Refactor so everything uses the ParamStore
-        return array_merge($this->_updateParams, $this->_insertParams, $this->paramStore->getParams(), $this->_havingParams);
+        return array_merge($this->_insertParams, $this->paramStore->getParams(), $this->_havingParams);
     }
 
     /**
@@ -682,34 +698,6 @@ class Qry implements IQry
         }
 
         return " (`" . implode('`, `', $columns) . '`) VALUES(' . implode(', ', $values) . ')';
-    }
-
-    private function getSetString(){
-        /** @var IDatabaseObject $o */
-        $o = $this->_object;
-
-        $this->checkDataType($o, [IDatabaseObject::class, 'array']);
-        if (is_array($o)){
-            $array = $o;
-        }else {
-            $array = $o->toArray();
-        }
-
-
-        if (count($array) == 0){
-            throw new \Exception("Nothing to set!");
-        }
-
-        $this->_updateParams = [];
-        $strings = [];
-        foreach ($array as $key => $value) {
-            $paramId = H::getUniqueId($this->_updateParams);
-            $this->_updateParams[$paramId] = $value;
-
-            $strings[] = "`{$key}` = :$paramId";
-        }
-
-        return " SET " . implode(', ', $strings);
     }
 
     private function getLimit(){
