@@ -110,6 +110,25 @@ class AbstractDatabaseTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(1, $this->db->stats['select']);
     }
 
+    public function testSelectImage(){
+        /** @var Team $team */
+        $q = Qry::select()
+            ->from(self::TABLE_TEAM)
+            ->orderByNull('image', false)
+            ->orderBy('name')
+            ->asClass(Team::class);
+
+        /** @var Team[] $teams */
+        $teams = $this->db->getRows($q);
+
+        $this->assertEquals('The Chimpmunks', $teams[0]->name);
+        $this->assertNull($teams[0]->image);
+
+        $this->assertEquals('Crazy Horses', $teams[1]->name);
+        $this->assertNotNull($teams[1]->image);
+
+    }
+
     public function testSelectAll(){
         /** @var Team $team */
         $q = Qry::select()

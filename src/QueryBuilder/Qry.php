@@ -11,6 +11,7 @@ use c00\QueryBuilder\components\FromClause;
 use c00\QueryBuilder\components\Join;
 use c00\QueryBuilder\components\JoinClass;
 use c00\QueryBuilder\components\JoinClause;
+use c00\QueryBuilder\components\OrderByClause;
 use c00\QueryBuilder\components\SelectClause;
 use c00\QueryBuilder\components\SelectFunction;
 use c00\QueryBuilder\components\UpdateClause;
@@ -46,7 +47,8 @@ class Qry implements IQry
 
     /** @var  JoinClause */
     private $_join;
-    private $_orderBy = [];
+    /** @var  OrderByClause */
+    private $_orderBy;
     private $_groupBy = [];
     private $_having = [];
 
@@ -54,7 +56,6 @@ class Qry implements IQry
     /** @var ParamStore */
     private $paramStore;
     //todo: Remove all these other params things.
-    //private $_updateParams = [];
     private $_insertParams = [];
     private $_havingParams = [];
 
@@ -67,6 +68,7 @@ class Qry implements IQry
         $this->_from = new FromClause();
         $this->_join = new JoinClause();
         $this->_where = new WhereClause();
+        $this->_orderBy = new OrderByClause();
         $this->paramStore = new ParamStore();
     }
 
@@ -182,7 +184,20 @@ class Qry implements IQry
      * @return Qry
      */
     public function orderBy($column, $ascending = true){
-        $this->_orderBy[] = ['column' => $column, 'asc' => $ascending];
+        $this->_orderBy->addColumn($column, $ascending);
+
+        return $this;
+    }
+
+
+    /** Add ORDER BY $column IS NULL
+     * Orders by rather the column value is NULL. Ascending will put them at the bottom, descending at the top.
+     * @param $column
+     * @param $ascending
+     * @return $this
+     */
+    public function orderByNull($column, $ascending) {
+        $this->_orderBy->addColumn($column, $ascending, 'IS NULL');
 
         return $this;
     }
@@ -712,19 +727,7 @@ class Qry implements IQry
     }
 
     private function getOrderByString(){
-        if (count($this->_orderBy) == 0) return '';
-
-        $strings = [];
-        foreach ($this->_orderBy as $item) {
-
-
-            $string = QryHelper::encap($item['column']);
-
-            $string .= ($item['asc']) ? " ASC" : " DESC";
-            $strings[] = $string;
-        }
-
-        return " ORDER BY " . implode(', ', $strings);
+        return $this->_orderBy->toString();
     }
 
     private function getGroupByString(){

@@ -59,6 +59,24 @@ class QryTest extends PHPUnit_Framework_TestCase{
 
     }
 
+    public function testOrderBy3(){
+
+        $query = Qry::select()->from('user')
+            ->where('role', '=', 'admin')
+            ->orderBy('user.name', false)
+            ->orderByNull('user.isAdmin', true)
+            ->limit(15);
+
+        $params = [];
+        $sql = $query->getSql($params);
+        $key = array_keys($params)[0];
+
+        $expected = "SELECT * FROM `user` WHERE `role` = :{$key} ORDER BY `user`.`name` DESC, `user`.`isAdmin` IS NULL ASC LIMIT 15";
+
+        $this->assertSame($expected, $sql);
+
+    }
+
     public function testSelectMax(){
         $expected = "SELECT `email`, MAX(`id`) FROM `user`";
 
