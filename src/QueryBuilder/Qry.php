@@ -196,7 +196,7 @@ class Qry implements IQry
      * @param $ascending
      * @return $this
      */
-    public function orderByNull($column, $ascending) {
+    public function orderByNull($column, $ascending = true) {
         $this->_orderBy->addColumn($column, $ascending, 'IS NULL');
 
         return $this;
