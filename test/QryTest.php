@@ -6,6 +6,7 @@
  * Time: 11:03
  */
 
+use c00\QueryBuilder\components\Join;
 use c00\QueryBuilder\Qry;
 use c00\QueryBuilder\QueryBuilderException;
 use c00\QueryBuilder\components\Ranges;
@@ -717,6 +718,27 @@ class QryTest extends PHPUnit_Framework_TestCase{
         $key = array_keys($params)[0];
 
         $expected = "SELECT * FROM `user` JOIN `session` ON `session`.`userId` = `user`.`id` JOIN `role` ON `user`.`roleId` = `role`.`id` WHERE `id` = :{$key}";
+
+        $this->assertSame($expected, $sql);
+    }
+
+    public function testSelectJoin3(){
+
+
+        $query = Qry::select()
+            ->from('user')
+            ->join('role', 'user.roleId', '=', 'role.id')
+            ->where('id', '=', 1);
+
+        $j = Join::newJoin('session', null, 'session.userId', '=', 'user.id')
+            ->andOn('session.groupId', '=', 'user.groupId');
+        $query->addJoin($j);
+
+        $params = [];
+        $sql = $query->getSql($params);
+        $key = array_keys($params)[0];
+
+        $expected = "SELECT * FROM `user` JOIN `role` ON `user`.`roleId` = `role`.`id` JOIN `session` ON `session`.`userId` = `user`.`id` AND `session`.`groupId` = `user`.`groupId` WHERE `id` = :{$key}";
 
         $this->assertSame($expected, $sql);
     }

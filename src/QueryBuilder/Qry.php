@@ -485,6 +485,18 @@ class Qry implements IQry
     }
 
     /**
+     * Add a Join Object to the query.
+     * Useful in situation where you want to add multiple ON parts to the join.
+     * @param $join Join The Join object
+     * @return $this
+     */
+    public function addJoin($join) {
+        $this->_join->joins[] = $join;
+
+        return $this;
+    }
+
+    /**
      * @param $class string
      * @param $table string
      * @param $alias string

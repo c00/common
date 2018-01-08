@@ -6,8 +6,8 @@ use c00\QueryBuilder\QryHelper;
 
 class Join extends From
 {
-    /** @var Comparison */
-    protected $on;
+    /** @var Comparison []*/
+    protected $on = [];
 
     protected $isOuter;
     protected $direction;
@@ -16,8 +16,9 @@ class Join extends From
     public static function newJoin($table, $alias, $condition1, $operator, $condition2) {
         $j = new Join();
         $j->table = $table;
-        $j->on = Where::new($condition1, $operator, '**'.$condition2, Where::TYPE_JOIN);
-        $j->on->isFirst = false;
+        $w = Where::new($condition1, $operator, '**'.$condition2, Where::TYPE_JOIN);
+        $w->isFirst = false;
+        $j->on[] = $w;
         $j->alias = $alias;
 
         return $j;
@@ -26,8 +27,9 @@ class Join extends From
     public static function newOuterJoin($table, $alias, $condition1, $operator, $condition2, $direction = "LEFT") {
         $j = new Join();
         $j->table = $table;
-        $j->on = Where::new($condition1, $operator, '**'.$condition2, Where::TYPE_JOIN);
-        $j->on->isFirst = false;
+        $w = Where::new($condition1, $operator, '**'.$condition2, Where::TYPE_JOIN);
+        $w->isFirst = false;
+        $j->on[] = $w;
         $j->alias = $alias;
         $j->isOuter = true;
         $j->direction = $direction;
@@ -35,12 +37,35 @@ class Join extends From
         return $j;
     }
 
+    public function andOn($condition1, $operator, $condition2){
+        $this->on[] = Where::new($condition1, $operator, '**'.$condition2, Where::TYPE_AND);
+        return $this;
+    }
+
+    public function orOn($condition1, $operator, $condition2){
+        $this->on[] = Where::new($condition1, $operator, '**'.$condition2, Where::TYPE_OR);
+        return $this;
+    }
+
+    private function morOn($condition1, $operator, $condition2){
+        throw new \Exception("Hehehe. Moron.");
+    }
+
+
+    private function getOnString($ps) {
+        $string = '';
+        foreach ($this->on as $comparison) {
+            $string .= $comparison->toString($ps);
+        }
+        return $string;
+    }
+
     public function toString($ps = null)
     {
         $table = QryHelper::encap($this->table);
         $alias = ($this->alias) ? " AS `{$this->alias}`" : "";
 
-        return " {$this->getJoinKeywords()}{$table}{$alias}{$this->on->toString($ps)}";
+        return " {$this->getJoinKeywords()}{$table}{$alias}{$this->getOnString($ps)}";
     }
 
     protected function getJoinKeywords() {

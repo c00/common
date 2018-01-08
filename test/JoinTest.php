@@ -35,5 +35,33 @@ class JoinTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($expected, $join->toString());
     }
 
+    public function multiJoinTest() {
+        $join = Join::newJoin('user', null, 'user.id', '=', 's.userId')
+            ->andOn('user.group', '=', 's.group');
+
+        $expected = " JOIN `user` ON `user`.`id` = `s`.`userId` AND `user`.`group` = `s`.`group`";
+        $this->assertEquals($expected, $join->toString());
+
+        $join = Join::newJoin('user', null, 'user.id', '=', 's.userId')
+            ->orOn('user.group', '=', 's.group');
+
+        $expected = " JOIN `user` ON `user`.`id` = `s`.`userId` OR `user`.`group` = `s`.`group`";
+        $this->assertEquals($expected, $join->toString());
+    }
+
+    public function testMultiOuter(){
+        $join = Join::newOuterJoin('user', null, 'user.id', '=', 's.userId')
+            ->andOn('user.group', '=', 's.group');
+
+        $expected = " LEFT OUTER JOIN `user` ON `user`.`id` = `s`.`userId` AND `user`.`group` = `s`.`group`";
+        $this->assertEquals($expected, $join->toString());
+
+        $join = Join::newOuterJoin('user', 'u', 'u.id', '=', 's.userId', 'RIGHT')
+            ->orOn('user.group', '=', 's.group');
+
+        $expected = " RIGHT OUTER JOIN `user` AS `u` ON `u`.`id` = `s`.`userId` OR `user`.`group` = `s`.`group`";
+        $this->assertEquals($expected, $join->toString());
+    }
+
 
 }
