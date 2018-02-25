@@ -13,8 +13,8 @@ class JoinClass extends Join
     public static function newJoinClass($class, $table, $alias, $condition1, $operator, $condition2) {
         $j = new JoinClass();
         $j->table = $table;
-        $j->on = Where::new($condition1, $operator, '**'.$condition2, Where::TYPE_JOIN);
-        $j->on->isFirst = false;
+        $j->on[] = Where::new($condition1, $operator, '**'.$condition2, Where::TYPE_JOIN);
+        $j->on[0]->isFirst = false;
         $j->alias = $alias;
         $j->class = $class;
 
@@ -24,8 +24,8 @@ class JoinClass extends Join
     public static function newOuterJoinClass($class, $table, $alias, $condition1, $operator, $condition2, $direction = "LEFT") {
         $j = new JoinClass();
         $j->table = $table;
-        $j->on = Where::new($condition1, $operator, '**'.$condition2, Where::TYPE_JOIN);
-        $j->on->isFirst = false;
+        $j->on[] = Where::new($condition1, $operator, '**'.$condition2, Where::TYPE_JOIN);
+        $j->on[0]->isFirst = false;
         $j->alias = $alias;
         $j->isOuter = true;
         $j->direction = $direction;
@@ -39,7 +39,7 @@ class JoinClass extends Join
         $table = QryHelper::encap($this->table);
         $alias = ($this->alias) ? " AS `{$this->alias}`" : "";
 
-        return " {$this->getJoinKeywords()}{$table}{$alias}{$this->on->toString($ps)}";
+        return " {$this->getJoinKeywords()}{$table}{$alias}{$this->getOnString($ps)}";
     }
 
     public function getClassColumns() {

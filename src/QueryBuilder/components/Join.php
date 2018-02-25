@@ -52,7 +52,7 @@ class Join extends From
     }
 
 
-    private function getOnString($ps) {
+    protected function getOnString($ps) {
         $string = '';
         foreach ($this->on as $comparison) {
             $string .= $comparison->toString($ps);

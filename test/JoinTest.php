@@ -9,6 +9,8 @@
 namespace test;
 
 use c00\QueryBuilder\components\Join;
+use c00\QueryBuilder\components\JoinClass;
+use c00\sample\User;
 
 class JoinTest extends \PHPUnit_Framework_TestCase
 {
@@ -35,19 +37,33 @@ class JoinTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($expected, $join->toString());
     }
 
-    public function multiJoinTest() {
-        $join = Join::newJoin('user', null, 'user.id', '=', 's.userId')
-            ->andOn('user.group', '=', 's.group');
+	public function testMultiJoin() {
+		$join = Join::newJoin('user', null, 'user.id', '=', 's.userId')
+		            ->andOn('user.group', '=', 's.group');
 
-        $expected = " JOIN `user` ON `user`.`id` = `s`.`userId` AND `user`.`group` = `s`.`group`";
-        $this->assertEquals($expected, $join->toString());
+		$expected = " JOIN `user` ON `user`.`id` = `s`.`userId` AND `user`.`group` = `s`.`group`";
+		$this->assertEquals($expected, $join->toString());
 
-        $join = Join::newJoin('user', null, 'user.id', '=', 's.userId')
-            ->orOn('user.group', '=', 's.group');
+		$join = Join::newJoin('user', null, 'user.id', '=', 's.userId')
+		            ->orOn('user.group', '=', 's.group');
 
-        $expected = " JOIN `user` ON `user`.`id` = `s`.`userId` OR `user`.`group` = `s`.`group`";
-        $this->assertEquals($expected, $join->toString());
-    }
+		$expected = " JOIN `user` ON `user`.`id` = `s`.`userId` OR `user`.`group` = `s`.`group`";
+		$this->assertEquals($expected, $join->toString());
+	}
+
+	public function testMultiJoinClass() {
+		$join = JoinClass::newJoinClass(User::class, 'user', 'u', 'u.id', '=', 's.userId')
+		            ->andOn('u.group', '=', 's.group');
+
+		$expected = " JOIN `user` AS `u` ON `u`.`id` = `s`.`userId` AND `u`.`group` = `s`.`group`";
+		$this->assertEquals($expected, $join->toString());
+
+		$join = Join::newJoin('user', null, 'user.id', '=', 's.userId')
+		            ->orOn('user.group', '=', 's.group');
+
+		$expected = " JOIN `user` ON `user`.`id` = `s`.`userId` OR `user`.`group` = `s`.`group`";
+		$this->assertEquals($expected, $join->toString());
+	}
 
     public function testMultiOuter(){
         $join = Join::newOuterJoin('user', null, 'user.id', '=', 's.userId')
