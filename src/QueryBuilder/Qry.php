@@ -232,11 +232,20 @@ class Qry implements IQry
         return $this;
     }
 
+	/** Get the SQL needed to prepare the query.
+	 * This will return an SQL query that can be used with PDO::prepare()
+	 *
+	 * @param array $params The parameters fort he prepared statement.
+	 *
+	 * @return string
+	 * @throws QueryBuilderException
+	 * @throws \Exception
+	 */
     public function getSql(&$params = null){
         if ($this->_type == self::TYPE_SELECT){
             $sql = $this->getSelectString() .
-                $this->_from->toString() .
-                $this->_join->toString() .
+                $this->_from->toString($this->paramStore) .
+                $this->_join->toString($this->paramStore) .
                 $this->getWhereString() .
                 $this->getGroupByString() .
                 $this->getHavingString() .

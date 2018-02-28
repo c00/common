@@ -37,13 +37,33 @@ class Join extends From
         return $j;
     }
 
-    public function andOn($condition1, $operator, $condition2){
-        $this->on[] = Where::new($condition1, $operator, '**'.$condition2, Where::TYPE_AND);
+	/**
+	 * @param $condition1 string Column for condition 1
+	 * @param $operator string
+	 * @param $condition2 string Column or value for condition 2
+	 * @param bool $onColumn True if $condition2 is a columns, false if it is a value
+	 *
+	 * @return $this
+	 */
+    public function andOn($condition1, $operator, $condition2, $onColumn = true){
+    	$prefix = ($onColumn) ? '**' : '';
+
+        $this->on[] = Where::new($condition1, $operator, $prefix.$condition2, Where::TYPE_AND);
         return $this;
     }
 
-    public function orOn($condition1, $operator, $condition2){
-        $this->on[] = Where::new($condition1, $operator, '**'.$condition2, Where::TYPE_OR);
+	/**
+	 * @param $condition1 string Column for condition 1
+	 * @param $operator string
+	 * @param $condition2 string Column or value for condition 2
+	 * @param bool $onColumn True if $condition2 is a columns, false if it is a value
+	 *
+	 * @return $this
+	 */
+    public function orOn($condition1, $operator, $condition2, $onColumn = true){
+	    $prefix = ($onColumn) ? '**' : '';
+
+        $this->on[] = Where::new($condition1, $operator, $prefix.$condition2, Where::TYPE_OR);
         return $this;
     }
 

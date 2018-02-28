@@ -40,7 +40,7 @@ class JoinClause implements IQryComponent
 
         $string = "";
         foreach ($this->joins as $j) {
-            $string .= $j->toString();
+            $string .= $j->toString($ps);
         }
 
         return $string;
