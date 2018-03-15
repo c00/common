@@ -82,24 +82,34 @@ class ObjectBuilder
 
             // // Make them objects // //
             //Make sure we have a type for it.
-            if (!isset($this->types[$table])) continue;
-            $className = $this->types[$table];
+            if (!isset($this->types[$table])) {
+            	//No type set. Just make it an array.
+	            //Assume 'id' as identifier
+	            $id = $array['id'] ?? -1;
 
-            if (!in_array(IDatabaseObject::class, class_implements($className))){
-                throw new QueryBuilderException("Class $className doesn't implement IDatabaseObject");
+	            if (isset($this->objects[$table][$id])) continue;
+	            $this->objects[$table][$id] = $array;
+            } else {
+            	//Convert to class
+	            $className = $this->types[$table];
+
+	            if (!in_array(IDatabaseObject::class, class_implements($className))){
+		            throw new QueryBuilderException("Class $className doesn't implement IDatabaseObject");
+	            }
+
+	            if (!isset($this->objects[$table])) $this->objects[$table] = [];
+	            /** @var IDatabaseObject $o */
+	            $o = $className::fromArray($array);
+	            $id = $o->getIdentifier();
+
+	            //Especially in Outer Joins it's possible to have all null objects. Those should not be added.
+	            if ($id === null) continue;
+
+	            //Don't add doubles.
+	            if (isset($this->objects[$table][$id])) continue;
+	            $this->objects[$table][$id] = $o;
             }
 
-            if (!isset($this->objects[$table])) $this->objects[$table] = [];
-            /** @var IDatabaseObject $o */
-            $o = $className::fromArray($array);
-            $id = $o->getIdentifier();
-
-            //Especially in Outer Joins it's possible to have all null objects. Those should not be added.
-            if ($id === null) continue;
-
-            //Don't add doubles.
-            if (isset($this->objects[$table][$id])) continue;
-            $this->objects[$table][$id] = $o;
         }
 
     }

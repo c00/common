@@ -518,20 +518,43 @@ class AbstractDatabaseTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($session instanceof TeamSession);
     }
 
-    public function testGetObjects5() {
-        $q = Qry::select()
-            ->fromClass(Team::class, 'team', 't')
-            ->outerJoinClass(TeamSession::class, 'teamsession', 'ts', 't.id', '=', 'ts.teamId')
-            ->where('t.id', '=', 1);
+	public function testGetObjects5() {
+		$q = Qry::select()
+		        ->fromClass(Team::class, 'team', 't')
+		        ->outerJoinClass(TeamSession::class, 'teamsession', 'ts', 't.id', '=', 'ts.teamId')
+		        ->where('t.id', '=', 1);
 
-        $objects = $this->db->getObjects($q);
+		$objects = $this->db->getObjects($q);
 
-        $this->assertEquals(1, count($objects['t']));
-        $this->assertEquals(1, count($objects['ts']));
+		$this->assertEquals(1, count($objects['t']));
+		$this->assertEquals(1, count($objects['ts']));
 
-        $token = '5bf1fd927dfb8679496a2e6cf00cbe50c1c87145';
-        $session = $objects['ts'][$token];
+		$token = '5bf1fd927dfb8679496a2e6cf00cbe50c1c87145';
+		$session = $objects['ts'][$token];
 
-        $this->assertTrue($session instanceof TeamSession);
-    }
+		$this->assertTrue($session instanceof TeamSession);
+	}
+
+	public function testGetObjects6() {
+		$q = Qry::select(['ts.*', 't.id' => 't.id', 't.name' => 't.name', 't.code' => 't.code'])
+		        ->fromClass(TeamSession::class, 'teamsession', 'ts')
+		        ->join(['t' => 'team'], 't.id', '=', 'ts.teamId')
+		        ->where('t.id', '=', 1);
+
+		$objects = $this->db->getObjects($q);
+
+		$this->assertEquals(1, count($objects['t']));
+		$this->assertEquals(1, count($objects['ts']));
+
+
+
+		$token = '5bf1fd927dfb8679496a2e6cf00cbe50c1c87145';
+		$session = $objects['ts'][$token];
+
+		$team = $objects['t'][1];
+		$this->assertTrue(is_array($team));
+		$this->assertEquals($team['name'], 'The Dudemeisters');
+
+		$this->assertTrue($session instanceof TeamSession);
+	}
 }
