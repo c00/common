@@ -29,9 +29,9 @@ class AbstractDatabaseTest extends \PHPUnit_Framework_TestCase
     private $pdo;
 
     public function setUp(){
-        $host = "localhost";
-        $user = "root";
-        $pass = "";
+        $host = "127.0.0.1";
+        $user = "coo";
+        $pass = "123";
         $dbName = "test_common";
 
         //Abstract Database instance
@@ -52,7 +52,7 @@ class AbstractDatabaseTest extends \PHPUnit_Framework_TestCase
     }
 
     public function testCompressedConnection(){
-        $host = "localhost";
+        $host = "127.0.0.1";
         $user = "root";
         $pass = "";
         $dbName = "test_common";
@@ -71,7 +71,7 @@ class AbstractDatabaseTest extends \PHPUnit_Framework_TestCase
     public function testConnectWrongPassword(){
         $this->expectException(\PDOException::class);
 
-        $host = "localhost";
+        $host = "127.0.0.1";
         $user = "root";
         $pass = "Notthepassword";
         $dbName = "test_common";
@@ -157,6 +157,7 @@ class AbstractDatabaseTest extends \PHPUnit_Framework_TestCase
 
         $id = $this->db->insertRow(Qry::insert(self::TABLE_TEAM, $team));
 
+        $this->assertTrue(is_int($id));
         $this->assertEquals(4, $id);
     }
 

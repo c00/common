@@ -212,7 +212,7 @@ abstract class AbstractDatabase
     /**
      * @param IQry $q
      * @param bool $noId Set this to true if the table does not use an ID column.
-     * @return bool|string True or false to indicate success. Or the ID of the new row when $noId = false.
+     * @return bool|string|int True or false to indicate success. Or the ID of the new row when $noId = false.
      * @throws \Exception
      */
     public function insertRow(IQry $q, $noId = false)
@@ -231,7 +231,11 @@ abstract class AbstractDatabase
         }
         $this->logQueryEnd($q);
 
-        return ($noId) ? true : $this->db->lastInsertId();
+        if ($noId) return true;
+        $id = $this->db->lastInsertId();
+        if (is_numeric($id)) return (int) $id;
+
+        return $id;
     }
 
     public function getRow(IQry $q, $toShowable = false)
