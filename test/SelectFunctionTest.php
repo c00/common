@@ -49,5 +49,14 @@ class SelectFunctionTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($expected, $actual);
     }
 
+	public function testGroupConcat(){
+		$gc = new SelectFunction('GROUP_CONCAT', 'user.name', "theName", 'DISTINCT', ['SEPARATOR' => ', ']);
+
+		$actual = $gc->toString();
+		$expected = "GROUP_CONCAT(DISTINCT `user`.`name` SEPARATOR ', ') AS `theName`";
+
+		$this->assertEquals($expected, $actual);
+	}
+
 
 }

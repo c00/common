@@ -398,20 +398,28 @@ class Qry implements IQry
     }
 
 
-    public function groupConcat($column, $alias = null, $keyword = null) {
-        return $this->selectFunction("GROUP_CONCAT", $column, $alias, $keyword);
+    public function groupConcat($column, $alias = null, $keyword = null, $separator = null) {
+    	$params = null;
+    	if ($separator) {
+    		$params = ["SEPARATOR" => $separator];
+	    }
+        return $this->selectFunction("GROUP_CONCAT", $column, $alias, $keyword, $params);
     }
 
-    /**
-     * @param $function string e.g. count
-     * @param $column string e.g. id
-     * @param null|string $alias e.g. wordCount
-     * @param null|string $keyword e.g. DISTINCT
-     * @return Qry
-     */
-    public function selectFunction($function, $column, $alias = null, $keyword = null){
+	/**
+	 * @param $function string e.g. count
+	 * @param $column string e.g. id
+	 * @param null|string $alias e.g. wordCount
+	 * @param null|string $keyword e.g. DISTINCT
+	 *
+	 * @param null|array|string $params Parameters for the function. (e.g. GROUP_CONCAT($column, ["SEPARATOR" => ", "])
+	 *
+	 * @return Qry
+	 * @throws QueryBuilderException
+	 */
+    public function selectFunction($function, $column, $alias = null, $keyword = null, $params = null){
 
-        $f = new SelectFunction($function, $column, $alias, $keyword);
+        $f = new SelectFunction($function, $column, $alias, $keyword, $params);
 
         $this->_select->addSelect($f);
 

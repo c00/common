@@ -1126,6 +1126,16 @@ class QryTest extends PHPUnit_Framework_TestCase{
         $this->assertSame($expected, $query->getSql());
     }
 
+	public function testGroupConcat2() {
+		$expected = "SELECT GROUP_CONCAT(DISTINCT `hobby` SEPARATOR ', ') FROM `table`.`user`";
+
+		$query = Qry::select()
+		            ->groupConcat('hobby', null, 'DISTINCT', ', ')
+		            ->from('table.user');
+
+		$this->assertSame($expected, $query->getSql());
+	}
+
     public function testFromClass() {
         /*
          * The query builder will add all User columns to the SELECT here itself,

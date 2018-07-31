@@ -110,6 +110,18 @@ class AbstractDatabaseTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(1, $this->db->stats['select']);
     }
 
+	public function testGroupConcatSeparator(){
+		$q = Qry::select()
+				->groupConcat('name', 'name', null, ' | ')
+		        ->from(self::TABLE_TEAM);
+
+		$actual = $this->db->getValue($q);
+
+		$expected = "The Dudemeisters | The Chimpmunks | Crazy Horses";
+
+		$this->assertEquals($expected, $actual);
+	}
+
     public function testSelectImage(){
         /** @var Team $team */
         $q = Qry::select()
