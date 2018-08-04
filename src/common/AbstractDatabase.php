@@ -52,7 +52,7 @@ abstract class AbstractDatabase
         return $this->qryInfo[$count-1];
     }
 
-    protected function connect($host, $user, $pass, $dbName, $port = null, $useCompression = false)
+    protected function connect($host, $user, $pass, $dbName, $port = null)
     {
         //Already connected? Just return true.
         if ($this->connected) return true;
@@ -62,8 +62,7 @@ abstract class AbstractDatabase
 
         $options = [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_EMULATE_PREPARES => false,
-            PDO::MYSQL_ATTR_COMPRESS => $useCompression
+            PDO::ATTR_EMULATE_PREPARES => false
         ];
 
         // Setup DB connection
