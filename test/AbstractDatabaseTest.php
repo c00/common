@@ -8,15 +8,13 @@
 
 namespace test;
 
+use c00\common\DatabaseException;
 use c00\QueryBuilder\Qry;
 use c00\QueryBuilder\QueryBuilderException;
 use c00\QueryBuilder\Ranges;
 use c00\sample\DatabaseWithTrait;
-use c00\sample\Session;
 use c00\sample\Team;
 use c00\sample\TeamSession;
-use c00\sample\User;
-use Prophecy\Exception\Exception;
 
 class AbstractDatabaseTest extends \PHPUnit_Framework_TestCase
 {
@@ -30,8 +28,8 @@ class AbstractDatabaseTest extends \PHPUnit_Framework_TestCase
 
     public function setUp(){
         $host = "127.0.0.1";
-        $user = "coo";
-        $pass = "123";
+        $user = "root";
+        $pass = "password";
         $dbName = "test_common";
 
         //Abstract Database instance
@@ -570,4 +568,60 @@ class AbstractDatabaseTest extends \PHPUnit_Framework_TestCase
 
 		$this->assertTrue($session instanceof TeamSession);
 	}
+
+	public function testTransactions1() {
+        $this->assertFalse($this->db->hasOpenTransaction());
+        $this->db->beginTransaction();
+
+        $this->assertTrue($this->db->hasOpenTransaction());
+
+        $this->expectException(DatabaseException::class);
+        $this->db->beginTransaction();
+    }
+
+    public function testTransactions2() {
+        $this->db->allowNestedTransactions = true;
+        $this->assertFalse($this->db->hasOpenTransaction());
+
+        $this->db->beginTransaction();
+        $this->assertTrue($this->db->hasOpenTransaction());
+
+        //Open second one.
+        $this->db->beginTransaction();
+        $this->assertTrue($this->db->hasOpenTransaction());
+
+        //Open third one.
+        $this->db->beginTransaction();
+        $this->assertTrue($this->db->hasOpenTransaction());
+
+        //Close third
+        $this->db->commitTransaction();
+        $this->assertTrue($this->db->hasOpenTransaction());
+
+        //Close second
+        $this->db->commitTransaction();
+        $this->assertTrue($this->db->hasOpenTransaction());
+
+        //Close first
+        $this->db->commitTransaction();
+        $this->assertfalse($this->db->hasOpenTransaction());
+    }
+
+    public function testTransactions3() {
+        $this->db->allowNestedTransactions = true;
+
+        $this->assertFalse($this->db->hasOpenTransaction());
+
+        //Open 3
+        $this->db->beginTransaction();
+        $this->db->beginTransaction();
+        $this->db->beginTransaction();
+
+        $this->assertTrue($this->db->hasOpenTransaction());
+
+        //rollback just one
+        $this->db->rollBackTransaction();
+        $this->assertFalse($this->db->hasOpenTransaction());
+    }
+
 }

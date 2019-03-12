@@ -19,7 +19,20 @@ abstract class AbstractDatabase
     protected $connected;
     private $dbName;
 
-    private $hasOpenTransaction = false;
+    /** Indicates whether a database transaction is currently open.
+     * @var bool
+     */
+    private $openTransaction = false;
+    private $transactionCount = 0;
+    /** Allow multiple transactions without errors.
+     *
+     * When true will allow you to call beginTransaction() multiple times before closing it. The transaction will need
+     *  to be committed as many times as it is opened for a database write to happen. On a rollback, it will immediately
+     *  rollback the entire transaction, regardless of how 'deep' we are.
+     * When false will throw an error when beginTransaction() is called before the active transaction is closed.
+     * @var bool
+     */
+    public $allowNestedTransactions = false;
     public $debug = false;
     public $stats = [
         Qry::TYPE_INSERT => 0,
@@ -36,6 +49,7 @@ abstract class AbstractDatabase
     private $currentDebugInfo;
 
     const NO_RECORD_FOUND = 1000;
+    const TRANSACTION_ALREADY_OPEN = 2000;
 
     public function __construct()
     {
@@ -50,6 +64,16 @@ abstract class AbstractDatabase
         if ($count === 0) return null;
 
         return $this->qryInfo[$count-1];
+    }
+
+    /** Get the last SQL query that was executed.
+     * @return string
+     */
+    public function getLastQrySql(){
+        $count = count($this->qryInfo);
+        if ($count === 0) return 'no qry info';
+
+        return $this->qryInfo[$count-1]->sql;
     }
 
     protected function connect($host, $user, $pass, $dbName, $port = null)
@@ -89,19 +113,41 @@ abstract class AbstractDatabase
         $this->currentDebugInfo = null;
     }
 
+    protected function hasOpenTransaction(): bool
+    {
+        return $this->openTransaction;
+    }
+
+    /** Begin a database transaction
+     * @throws DatabaseException when transaction is already open and self::allowNestedTRansactions is false
+     */
     public function beginTransaction(){
-        $this->hasOpenTransaction = true;
-        $this->stats['transactions']++;
-        $this->db->beginTransaction();
+        if (!$this->allowNestedTransactions && $this->transactionCount === 1) {
+            throw new DatabaseException('Transaction already open', self::TRANSACTION_ALREADY_OPEN);
+        }
+        $this->openTransaction = true;
+        $this->transactionCount++;
+
+        //Only begin a new transaction when transactionCount is exactly 1.
+        if ($this->transactionCount === 1) {
+            $this->stats['transactions']++;
+            $this->db->beginTransaction();
+        }
     }
 
     public function commitTransaction(){
-        $this->hasOpenTransaction = false;
-        $this->db->commit();
+        $this->transactionCount--;
+
+        //Only commit when the count is back to 0.
+        if ($this->transactionCount === 0) {
+            $this->db->commit();
+            $this->openTransaction = false;
+        }
     }
 
     public function rollBackTransaction(){
-        $this->hasOpenTransaction = false;
+        $this->openTransaction = false;
+        $this->transactionCount = 0;
         $this->db->rollBack();
     }
 

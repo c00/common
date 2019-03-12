@@ -32,4 +32,8 @@ class DatabaseWithTrait extends AbstractDatabase
         parent::connect($host, $user, $pass, $dbName, $port, $useCompression);
     }
 
+    public function hasOpenTransaction(): bool {
+        return parent::hasOpenTransaction();
+    }
+
 }
