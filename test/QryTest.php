@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Co
- * Date: 17/06/2016
- * Time: 11:03
- */
 
 use c00\QueryBuilder\components\Join;
 use c00\QueryBuilder\Qry;
@@ -13,8 +7,9 @@ use c00\QueryBuilder\components\Ranges;
 use c00\QueryBuilder\components\WhereGroup;
 use c00\sample\Session;
 use c00\sample\User;
+use PHPUnit\Framework\TestCase;
 
-class QryTest extends PHPUnit_Framework_TestCase{
+class QryTest extends TestCase {
 
     public function testSelect(){
         $expected = "SELECT * FROM `user`";

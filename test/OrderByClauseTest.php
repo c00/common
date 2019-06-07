@@ -2,15 +2,10 @@
 
 namespace test;
 
-use c00\QueryBuilder\components\Comparison;
 use c00\QueryBuilder\components\OrderByClause;
-use c00\QueryBuilder\components\Where;
-use c00\QueryBuilder\components\WhereClause;
-use c00\QueryBuilder\components\WhereIn;
-use c00\QueryBuilder\ParamStore;
-use c00\QueryBuilder\QueryBuilderException;
+use PHPUnit\Framework\TestCase;
 
-class OrderByClauseTest extends \PHPUnit_Framework_TestCase
+class OrderByClauseTest extends TestCase
 {
     public function testOneColumn() {
         $clause = new OrderByClause();

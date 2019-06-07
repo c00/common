@@ -1,17 +1,12 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Co
- * Date: 18/06/2016
- * Time: 01:12
- */
 
 namespace test;
 
 
 use c00\common\CovleDate;
+use PHPUnit\Framework\TestCase;
 
-class crapTest extends \PHPUnit_Framework_TestCase
+class crapTest extends TestCase
 {
 
     public function testTruth(){
@@ -37,18 +32,18 @@ class crapTest extends \PHPUnit_Framework_TestCase
         //assertEquals(2, "2") will pass
 
         //assertSame is strict. 1 != "1"
-        $this->assertSame("lol" - 2, -2); // ???
-        $this->assertSame("Anything" - 1, -1); // ???
+        //$this->assertSame("lol" - 2, -2); // Non numeric value error
+        //$this->assertSame("Anything" - 1, -1); // Non numerif value error
         $this->assertSame("0" + 4, 4);
         $this->assertSame("0" . 4, "04");
         $this->assertSame("0" - 4, -4);
         $this->assertSame("0" * 4, 0);
         $this->assertSame("0" / 4, 0);
         //$this->assertSame("0" / 0, 0); //Division by Zero exception
-        $this->assertSame("foo" - "bar", 0);
-        $this->assertNotSame("foo" - "bar", 2);
-        $this->assertNotSame("foo" - "bar", false);
-        $this->assertSame("foo" * "bar", 0);
+        //$this->assertSame("foo" - "bar", 0); //Non numeric error
+        //$this->assertNotSame("foo" - "bar", 2); Non numeric value
+        //$this->assertNotSame("foo" - "bar", false); //Non numeric value
+        //$this->assertSame("foo" * "bar", 0); //Non numeric value
         //$this->assertSame("foo" / "bar", 0); //Division by Zero exception
 
     }

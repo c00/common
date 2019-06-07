@@ -1,19 +1,12 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Co
- * Date: 18/06/2016
- * Time: 01:12
- */
 
 namespace test;
 
 
-use c00\common\CovleDate;
-use c00\common\Helper;
 use c00\QueryBuilder\QryHelper;
+use PHPUnit\Framework\TestCase;
 
-class QryHelperTest extends \PHPUnit_Framework_TestCase
+class QryHelperTest extends TestCase
 {
 
     public function testEncapsulation(){

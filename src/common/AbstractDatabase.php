@@ -47,6 +47,8 @@ abstract class AbstractDatabase
     public $qryInfo = [];
     /** @var  DebugInfo */
     private $currentDebugInfo;
+    /** @var  DebugInfo */
+    private $currentTransaction;
 
     const NO_RECORD_FOUND = 1000;
     const TRANSACTION_ALREADY_OPEN = 2000;
@@ -113,6 +115,22 @@ abstract class AbstractDatabase
         $this->currentDebugInfo = null;
     }
 
+    private function logTransactionStart(){
+        $this->stats['transactions']++;
+
+        if (!$this->debug) return;
+
+        $this->currentTransaction = DebugInfo::start();
+    }
+
+    private function logTransactionEnd(){
+        if (!$this->debug || !$this->currentTransaction) return;
+
+        $this->currentTransaction->finish(DebugInfo::TYPE_TRANSACTION);
+        $this->qryInfo[] = $this->currentTransaction;
+        $this->currentTransaction = null;
+    }
+
     protected function hasOpenTransaction(): bool
     {
         return $this->openTransaction;
@@ -130,8 +148,9 @@ abstract class AbstractDatabase
 
         //Only begin a new transaction when transactionCount is exactly 1.
         if ($this->transactionCount === 1) {
-            $this->stats['transactions']++;
+            $this->logTransactionStart();
             $this->db->beginTransaction();
+
         }
     }
 
@@ -142,6 +161,7 @@ abstract class AbstractDatabase
         if ($this->transactionCount === 0) {
             $this->db->commit();
             $this->openTransaction = false;
+            $this->logTransactionEnd();
         }
     }
 

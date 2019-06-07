@@ -1,20 +1,14 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Co
- * Date: 18/06/2016
- * Time: 01:12
- */
 
 namespace test;
 
-
+use PHPUnit\Framework\TestCase;
 use c00\QueryBuilder\components\Comparison;
 use c00\QueryBuilder\components\Where;
 use c00\QueryBuilder\ParamStore;
 use c00\QueryBuilder\QueryBuilderException;
 
-class WhereTest extends \PHPUnit_Framework_TestCase
+class WhereTest extends TestCase
 {
 
     public function testWhere(){

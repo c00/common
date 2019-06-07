@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Co
- * Date: 09/10/2016
- * Time: 21:43
- */
 
 namespace test;
 
@@ -13,6 +7,7 @@ use c00\QueryBuilder\QueryBuilderException;
 use c00\QueryBuilder\Ranges;
 use c00\sample\DatabaseWithTrait;
 use c00\sample\Team;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Class AbstractDatabaseAlternatePortTest
@@ -21,7 +16,7 @@ use c00\sample\Team;
  *
  * @package test
  */
-class AbstractDatabaseAlternatePortTest extends \PHPUnit_Framework_TestCase
+class AbstractDatabaseAlternatePortTest extends TestCase
 {
     const TABLE_TEAM = 'team';
 
@@ -30,12 +25,12 @@ class AbstractDatabaseAlternatePortTest extends \PHPUnit_Framework_TestCase
     /** @var \PDO */
     private $pdo;
 
-    public function setUp(){
+    public function setUp(): void {
         $host = "127.0.0.1";
-        $user = "test";
-        $pass = "S45FM9hbqrXgHSTkXDYJgbxZ7q";
+        $user = "root";
+        $pass = "root";
         $dbName = "test_common";
-        $port = 33061;
+        $port = 3306;
 
         //Abstract Database instance
         $this->db = new DatabaseWithTrait();
@@ -170,6 +165,7 @@ class AbstractDatabaseAlternatePortTest extends \PHPUnit_Framework_TestCase
             ->where('code', '=', 'aapjes44');
 
         $this->db->deleteRows($q);
+        $this->expectNotToPerformAssertions();
     }
 
     public function testDeleteReturnRowCount(){

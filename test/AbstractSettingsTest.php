@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Co
- * Date: 18/06/2016
- * Time: 01:12
- */
 
 namespace test;
 
@@ -13,19 +7,20 @@ use c00\sample\NestedSettings;
 use c00\sample\SampleSettings;
 use c00\sample\Team;
 use c00\sample\User;
+use PHPUnit\Framework\TestCase;
 
-class AbstractSettingsTest extends \PHPUnit_Framework_TestCase
+class AbstractSettingsTest extends TestCase
 {
     const FILE = "/tmp/sample-settings.json";
 
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
         if (file_exists(self::FILE)) unlink(self::FILE);
     }
 
-    function tearDown()
+    function tearDown(): void
     {
         parent::tearDown();
 

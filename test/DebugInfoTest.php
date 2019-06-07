@@ -1,22 +1,14 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Co
- * Date: 09/10/2016
- * Time: 21:43
- */
 
 namespace test;
 
 use c00\QueryBuilder\DebugInfo;
 use c00\QueryBuilder\Qry;
-use c00\QueryBuilder\QueryBuilderException;
-use c00\QueryBuilder\Ranges;
 use c00\sample\DatabaseWithTrait;
 use c00\sample\Team;
-use Prophecy\Exception\Exception;
+use PHPUnit\Framework\TestCase;
 
-class DebugInfoTest extends \PHPUnit_Framework_TestCase
+class DebugInfoTest extends TestCase
 {
     const TABLE_TEAM = 'team';
 
@@ -25,10 +17,10 @@ class DebugInfoTest extends \PHPUnit_Framework_TestCase
     /** @var \PDO */
     private $pdo;
 
-    public function setUp(){
-        $host = "localhost";
+    public function setUp(): void {
+        $host = "127.0.0.1";
         $user = "root";
-        $pass = "";
+        $pass = "root";
         $dbName = "test_common";
 
         //Abstract Database instance
@@ -66,5 +58,13 @@ class DebugInfoTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($info->getDifference() < 1.1);
 
         $this->assertEquals("SELECT * FROM `team` WHERE `code` = 'aapjes44' LIMIT 1", $info->sql);
+    }
+
+    public function testTransaction(){
+        $d = new DebugInfo();
+        $d->start();
+        $d->finish(DebugInfo::TYPE_TRANSACTION);
+
+        $this->assertEquals('transaction', $d->sql);
     }
 }

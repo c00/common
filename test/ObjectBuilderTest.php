@@ -9,8 +9,9 @@ use c00\QueryBuilder\Qry;
 use c00\sample\MappedTeam;
 use c00\sample\Session;
 use c00\sample\User;
+use PHPUnit\Framework\TestCase;
 
-class ObjectBuilderTest extends \PHPUnit_Framework_TestCase
+class ObjectBuilderTest extends TestCase
 {
 
 	public function testBuild() {

@@ -1,22 +1,18 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Co
- * Date: 09/10/2016
- * Time: 21:43
- */
 
 namespace test;
 
 use c00\common\DatabaseException;
+use c00\QueryBuilder\DebugInfo;
 use c00\QueryBuilder\Qry;
 use c00\QueryBuilder\QueryBuilderException;
 use c00\QueryBuilder\Ranges;
 use c00\sample\DatabaseWithTrait;
 use c00\sample\Team;
 use c00\sample\TeamSession;
+use PHPUnit\Framework\TestCase;
 
-class AbstractDatabaseTest extends \PHPUnit_Framework_TestCase
+class AbstractDatabaseTest extends TestCase
 {
     const TABLE_TEAM = 'team';
     const TABLE_TEAM_SESSION = 'teamsession';
@@ -26,10 +22,10 @@ class AbstractDatabaseTest extends \PHPUnit_Framework_TestCase
     /** @var \PDO */
     private $pdo;
 
-    public function setUp(){
+    public function setUp(): void {
         $host = "127.0.0.1";
         $user = "root";
-        $pass = "password";
+        $pass = "root";
         $dbName = "test_common";
 
         //Abstract Database instance
@@ -52,12 +48,13 @@ class AbstractDatabaseTest extends \PHPUnit_Framework_TestCase
     public function testCompressedConnection(){
         $host = "127.0.0.1";
         $user = "root";
-        $pass = "";
+        $pass = "root";
         $dbName = "test_common";
 
         $db = new DatabaseWithTrait();
         $db->connect($host, $user, $pass, $dbName, null, true);
 
+        $this->expectNotToPerformAssertions();
         //$pdo = $db->getDb();
 
         //$driver = $pdo->getAttribute(\PDO::ATTR_DRIVER_NAME);
@@ -239,6 +236,7 @@ class AbstractDatabaseTest extends \PHPUnit_Framework_TestCase
             ->where('code', '=', 'aapjes44');
 
         $this->db->deleteRows($q);
+        $this->expectNotToPerformAssertions();
     }
 
     public function testDeleteReturnRowCount(){
@@ -450,6 +448,30 @@ class AbstractDatabaseTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(2, $this->db->stats[Qry::TYPE_DELETE]);
         $this->assertEquals(0, $this->db->stats['other']);
         $this->assertEquals(0, $this->db->stats['transactions']);
+    }
+
+    public function testDebug3(){
+        $this->db->debug = true;
+        $this->db->beginTransaction();
+        sleep(1);
+        $q = Qry::delete(self::TABLE_TEAM)
+            ->where('code', '=', 'aapjes44');
+        $this->db->deleteRows($q);
+
+        sleep(1);
+        $q2 = Qry::delete(self::TABLE_TEAM)
+            ->where('id', '>', 0);
+        $this->db->deleteRows($q2);
+
+
+        $this->db->commitTransaction();
+
+        $qryInfo = $this->db->qryInfo;
+
+        $transactionInfo = $qryInfo[count($qryInfo) - 1];
+
+        $this->assertEquals(DebugInfo::TYPE_TRANSACTION, $transactionInfo->sql, "Should be transaction");
+        $this->assertGreaterThan(1.9, $transactionInfo->getDifference(), "There's at least a 2 second difference");
     }
 
     public function testGetQryInfo(){

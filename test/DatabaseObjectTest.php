@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Co
- * Date: 30/09/2016
- * Time: 00:38
- */
 
 namespace test;
 
@@ -12,8 +6,9 @@ namespace test;
 use c00\common\CovleDate;
 use c00\sample\MappedTeam;
 use c00\sample\User;
+use PHPUnit\Framework\TestCase;
 
-class DatabaseObjectTest extends \PHPUnit_Framework_TestCase
+class DatabaseObjectTest extends TestCase
 {
     const TEST_DATE_SECONDS = 507303000;
 

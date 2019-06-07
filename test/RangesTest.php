@@ -1,17 +1,12 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Co
- * Date: 18/06/2016
- * Time: 01:12
- */
 
 namespace test;
 
+use PHPUnit\Framework\TestCase;
 use c00\QueryBuilder\ParamStore;
 use c00\QueryBuilder\components\Ranges;
 
-class RangesTest extends \PHPUnit_Framework_TestCase
+class RangesTest extends TestCase
 {
 
     public function testBasicUsage(){

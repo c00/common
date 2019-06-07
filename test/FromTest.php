@@ -1,16 +1,11 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Co
- * Date: 18/06/2016
- * Time: 01:12
- */
 
 namespace test;
 
 use c00\QueryBuilder\components\From;
+use PHPUnit\Framework\TestCase;
 
-class FromTest extends \PHPUnit_Framework_TestCase
+class FromTest extends TestCase
 {
 
     public function testBasic(){

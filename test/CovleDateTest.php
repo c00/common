@@ -9,8 +9,9 @@
 namespace test;
 
 use c00\common\CovleDate;
+use PHPUnit\Framework\TestCase;
 
-class CovleDateTest extends \PHPUnit_Framework_TestCase
+class CovleDateTest extends TestCase
 {
     const TEST_DATE_SECONDS = 507303000;
     const TEST_DATETIME_STRING_GMT = "1986-01-28 13:30:00";

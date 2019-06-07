@@ -1,15 +1,10 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Co
- * Date: 17/06/2016
- * Time: 11:03
- */
 
 use c00\QueryBuilder\Query;
 use c00\QueryBuilder\QueryBuilderException;
+use PHPUnit\Framework\TestCase;
 
-class QueryTest extends PHPUnit_Framework_TestCase
+class QueryTest extends TestCase
 {
     public function testSelect(){
         $expected = "SELECT * FROM `user`";

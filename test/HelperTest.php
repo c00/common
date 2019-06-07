@@ -1,19 +1,12 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Co
- * Date: 18/06/2016
- * Time: 01:12
- */
 
 namespace test;
 
-
-use c00\common\CovleDate;
+use PHPUnit\Framework\TestCase;
 use c00\common\Helper;
 use c00\sample\User;
 
-class HelperTest extends \PHPUnit_Framework_TestCase
+class HelperTest extends TestCase
 {
 
     public function testUniqueIds(){

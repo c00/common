@@ -1,23 +1,18 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Co
- * Date: 05/10/2016
- * Time: 13:38
- */
 
 namespace test;
 
 
 use c00\common\AbstractDatabase;
+use c00\dependencies\IDependency;
 use c00\dependencies\TDependency;
 use c00\sample\DatabaseWithInterface;
 use c00\sample\DatabaseWithTrait;
-use c00\dependencies\IDependency;
 use c00\sample\DependencyContainer;
 use c00\sample\Team;
+use PHPUnit\Framework\TestCase;
 
-class DependeciesTest extends \PHPUnit_Framework_TestCase
+class DependeciesTest extends TestCase
 {
 
     public function testInterface(){

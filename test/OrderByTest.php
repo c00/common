@@ -1,17 +1,11 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Co
- * Date: 18/06/2016
- * Time: 01:12
- */
 
 namespace test;
 
 use c00\QueryBuilder\components\OrderBy;
-use c00\QueryBuilder\components\Select;
+use PHPUnit\Framework\TestCase;
 
-class OrderByTest extends \PHPUnit_Framework_TestCase
+class OrderByTest extends TestCase
 {
 
     public function testBasic(){

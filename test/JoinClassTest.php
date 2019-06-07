@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Co
- * Date: 18/06/2016
- * Time: 01:12
- */
 
 namespace test;
 
@@ -12,8 +6,9 @@ use c00\QueryBuilder\components\JoinClass;
 use c00\QueryBuilder\components\Select;
 use c00\sample\MappedTeam;
 use c00\sample\User;
+use PHPUnit\Framework\TestCase;
 
-class JoinClassTest extends \PHPUnit_Framework_TestCase
+class JoinClassTest extends TestCase
 {
 
     public function testBasic(){
