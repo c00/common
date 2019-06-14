@@ -46,9 +46,11 @@ class Join extends From
 	 * @return $this
 	 */
     public function andOn($condition1, $operator, $condition2, $onColumn = true){
-    	$prefix = ($onColumn) ? '**' : '';
+        if ($condition2 !== null && $onColumn) {
+            $condition2 = "**$condition2";
+        }
 
-        $this->on[] = Where::new($condition1, $operator, $prefix.$condition2, Where::TYPE_AND);
+        $this->on[] = Where::new($condition1, $operator, $condition2, Where::TYPE_AND);
         return $this;
     }
 
@@ -61,9 +63,11 @@ class Join extends From
 	 * @return $this
 	 */
     public function orOn($condition1, $operator, $condition2, $onColumn = true){
-	    $prefix = ($onColumn) ? '**' : '';
+        if ($condition2 !== null && $onColumn) {
+            $condition2 = "**$condition2";
+        }
 
-        $this->on[] = Where::new($condition1, $operator, $prefix.$condition2, Where::TYPE_OR);
+        $this->on[] = Where::new($condition1, $operator, $condition2, Where::TYPE_OR);
         return $this;
     }
 
