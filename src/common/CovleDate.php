@@ -128,8 +128,16 @@ class CovleDate implements IDatabaseProperty
         return ($this->toSeconds() > $date->toSeconds());
     }
 
+    public function isSameOrLaterThan(CovleDate $date){
+        return ($this->toSeconds() >= $date->toSeconds());
+    }
+
     public function isEarlierThan(CovleDate $date){
         return ($this->toSeconds() < $date->toSeconds());
+    }
+
+    public function isSameOrEarlierThan(CovleDate $date){
+        return ($this->toSeconds() <= $date->toSeconds());
     }
 
     public function equals(CovleDate $date){

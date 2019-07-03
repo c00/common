@@ -180,5 +180,37 @@ class CovleDateTest extends TestCase
 
     }
 
+    public function testIsEarlierThan() {
+        $date1 = CovleDate::fromString(self::TEST_DATETIME_STRING_GMT);
+        $date2 = CovleDate::fromString(self::TEST_DATETIME_STRING_GMT)->addSeconds(1);
+
+        $this->assertTrue($date1->isEarlierThan($date2));
+        $this->assertTrue($date1->isSameOrEarlierThan($date2));
+
+        $date2->addSeconds(-1);
+        $this->assertFalse($date1->isEarlierThan($date2));
+        $this->assertTrue($date1->isSameOrEarlierThan($date2));
+
+        $date2->addSeconds(-1);
+        $this->assertFalse($date1->isEarlierThan($date2));
+        $this->assertFalse($date1->isSameOrEarlierThan($date2));
+    }
+
+    public function testIsLaterThan() {
+        $date1 = CovleDate::fromString(self::TEST_DATETIME_STRING_GMT);
+        $date2 = CovleDate::fromString(self::TEST_DATETIME_STRING_GMT)->addSeconds(-1);
+
+        $this->assertTrue($date1->isLaterThan($date2));
+        $this->assertTrue($date1->isSameOrLaterThan($date2));
+
+        $date2->addSeconds(1);
+        $this->assertFalse($date1->isLaterThan($date2));
+        $this->assertTrue($date1->isSameOrLaterThan($date2));
+
+        $date2->addSeconds(1);
+        $this->assertFalse($date1->isLaterThan($date2));
+        $this->assertFalse($date1->isSameOrLaterThan($date2));
+    }
+
 
 }
