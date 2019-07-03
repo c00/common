@@ -1,14 +1,9 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: coo
- * Date: 01/06/17
- * Time: 22:08
- */
 
 namespace c00\QueryBuilder\components;
 
 use c00\QueryBuilder\ParamStore;
+use c00\QueryBuilder\Qry;
 use c00\QueryBuilder\QueryBuilderException;
 
 class WhereGroup extends Comparison
@@ -33,6 +28,21 @@ class WhereGroup extends Comparison
         $g = new WhereGroup();
 
         $g->conditions[] = Where::new($condition1, $operator, $condition2);
+        $g->type = $type;
+
+        return $g;
+    }
+
+    /**
+     * @param $group WhereGroup
+     * @param string $type
+     *
+     * @return WhereGroup
+     */
+    public static function newGroup($group, $type = Comparison::TYPE_AND) {
+        $g = new WhereGroup();
+
+        $g->whereGroup($group);
         $g->type = $type;
 
         return $g;
@@ -119,6 +129,25 @@ class WhereGroup extends Comparison
 
         $this->conditions[] = $wi;
 
+        return $this;
+    }
+
+    /**
+     * @param $group WhereGroup
+     * @return WhereGroup
+     */
+    public function whereGroup($group){
+        $this->conditions[] = $group;
+        return $this;
+    }
+
+    /**
+     * @param $group WhereGroup
+     * @return WhereGroup
+     */
+    public function orWhereGroup($group){
+        $group->type = Comparison::TYPE_OR;
+        $this->conditions[] = $group;
         return $this;
     }
 

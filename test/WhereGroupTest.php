@@ -90,5 +90,23 @@ class WhereGroupTest extends TestCase
         $this->assertEquals($expected, $actual);
     }
 
+    public function testWhereGroup() {
+        $ps = new ParamStore();
+        $g = WhereGroup::newGroup(
+            WhereGroup::new('table.name', '=', 'peter')
+            ->where('email', '=', 'peter@blaat.com')
+            ->where('id', '=', 1)
+        )
+        ->whereGroup(
+            WhereGroup::new('table.date', '>', 1234)
+            ->where('table.date', '<', 9999)
+        );
+
+        $actual = $g->toString($ps);
+        $keys = array_keys($ps->getParams());
+
+        $expected = " AND ((`table`.`name` = :{$keys[0]} AND `email` = :{$keys[1]} AND `id` = :{$keys[2]}) AND (`table`.`date` > :{$keys[3]} AND `table`.`date` < :{$keys[4]}))";
+        $this->assertEquals($expected, $actual);
+    }
 
 }
